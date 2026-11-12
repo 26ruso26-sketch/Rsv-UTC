@@ -1,0 +1,548 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Building {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  directors User[]
+  spaces    Space[]
+
+  @@index([code])
+}
+
+model User {
+  id              String   @id @default(cuid())
+  username        String   @unique
+  passwordHash    String
+  fullName        String
+  email           String?
+  role            String   // SUPER_ADMIN | DIRECTOR | EXTENSION
+  buildingId      String?
+  departmentLabel String?
+  active          Boolean  @default(true)
+  isDemo          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  building                  Building?               @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  authorizedSpaces          Space[]                 @relation("SpaceAuthorizer")
+  createdEvents             Event[]                 @relation("EventCreator")
+  closedEvents              Event[]                 @relation("EventCloser")
+  assignedSpaceRequests     SpaceRequest[]          @relation("SpaceRequestAuthorizer")
+  resolvedEquipmentRequests EquipmentRequest[]      @relation("EquipmentRequestAuthorizer")
+  requestedScheduleChanges  ScheduleChangeRequest[] @relation("ScheduleChangeRequester")
+  authorizedScheduleChanges ScheduleChangeRequest[] @relation("ScheduleChangeAuthorizer")
+  uploadedEvidences         EventEvidence[]
+  notifications             Notification[]
+  auditLogs                 AuditLog[]
+  createdAttendees          EventAttendee[]         @relation("AttendeeCreator")
+  revokedAttendees          EventAttendee[]         @relation("AttendeeRevoker")
+  registeredAttendances     EventAttendance[]       @relation("AttendanceRegistrar")
+  operatorAssignments       EventAccessOperator[]   @relation("OperatorUser")
+  assignedOperators         EventAccessOperator[]   @relation("OperatorAssigner")
+  scanLogs                  AttendanceScanLog[]     @relation("ScanOperator")
+
+  @@index([role])
+  @@index([buildingId])
+}
+
+model Space {
+  id               String   @id @default(cuid())
+  code             String   @unique
+  name             String   @unique
+  category         String   // AUDITORIO | EXPLANADA_DOMO | DEPORTIVO
+  capacity         Int      @default(120)
+  location         String?
+  buildingId       String?
+  authorizerType   String   // DIRECTOR | EXTENSION
+  authorizerUserId String
+  active           Boolean  @default(true)
+  isDemo           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  building               Building?               @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  authorizer             User                    @relation("SpaceAuthorizer", fields: [authorizerUserId], references: [id], onDelete: Restrict)
+  events                 Event[]
+  spaceRequests          SpaceRequest[]
+  scheduleChangeRequests ScheduleChangeRequest[]
+  reservations           Reservation[]
+
+  @@index([authorizerUserId])
+  @@index([buildingId])
+}
+
+model AudienceType {
+  id          String   @id @default(cuid())
+  level       Int      @unique // 1, 2, 3, 4
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  eventAudiences EventAudience[]
+
+  @@index([level])
+}
+
+model EquipmentType {
+  id          String   @id @default(cuid())
+  code        String   @unique // SOUND | FURNITURE
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  equipmentRequestTypes EquipmentRequestType[]
+}
+
+model Career {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  isDemo      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attendees EventAttendee[]
+
+  @@index([code])
+}
+
+model AcademicGrade {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  name       String   @unique
+  levelOrder Int      @default(1)
+  active     Boolean  @default(true)
+  isDemo     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  attendees EventAttendee[]
+
+  @@index([levelOrder])
+}
+
+model DepartmentArea {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String   @unique
+  areaType  String   @default("ACADEMIC") // ACADEMIC | ADMINISTRATIVE
+  active    Boolean  @default(true)
+  isDemo    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attendees EventAttendee[]
+
+  @@index([areaType])
+}
+
+model Event {
+  id                    String    @id @default(cuid())
+  demoCode              String?   @unique
+  isDemo                Boolean   @default(false)
+  name                  String
+  description           String
+  justification         String
+  date                  String    // YYYY-MM-DD in America/Monterrey
+  startTime             String    // HH:mm
+  endTime               String    // HH:mm
+  cleaningEndTime       String    // HH:mm (+1 hour after endTime)
+  startMinutes          Int
+  endMinutes            Int
+  cleaningEndMinutes    Int
+  spaceId               String
+  responsibleName       String
+  responsibleDepartment String
+  responsibleEmail      String?
+  createdById           String
+  criticalityLevel      Int       // Minimum of selected AudienceType levels (1..4)
+  closedAt              DateTime?
+  closedById            String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  space                  Space                   @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  createdBy              User                    @relation("EventCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  closedBy               User?                   @relation("EventCloser", fields: [closedById], references: [id], onDelete: SetNull)
+  audiences              EventAudience[]
+  spaceRequest           SpaceRequest?
+  equipmentRequest       EquipmentRequest?
+  scheduleChangeRequests ScheduleChangeRequest[]
+  reservations           Reservation[]
+  evidences              EventEvidence[]
+  notifications          Notification[]
+  auditLogs              AuditLog[]
+  attendanceConfig       EventAttendanceConfig?
+  attendees              EventAttendee[]
+  attendances            EventAttendance[]
+  accessOperators        EventAccessOperator[]
+  scanLogs               AttendanceScanLog[]
+
+  @@index([spaceId, date])
+  @@index([createdById])
+  @@index([date])
+  @@index([criticalityLevel])
+}
+
+model EventAudience {
+  id             String   @id @default(cuid())
+  eventId        String
+  audienceTypeId String
+  createdAt      DateTime @default(now())
+
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  audienceType AudienceType @relation(fields: [audienceTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, audienceTypeId])
+  @@index([eventId])
+}
+
+model SpaceRequest {
+  id              String    @id @default(cuid())
+  eventId         String    @unique
+  spaceId         String
+  authorizerId    String
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED | EXPIRED
+  rejectionReason String?
+  decisionNotes   String?
+  revisionCount   Int       @default(1)
+  requestedAt     DateTime  @default(now())
+  resolvedAt      DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  space      Space @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  authorizer User  @relation("SpaceRequestAuthorizer", fields: [authorizerId], references: [id], onDelete: Restrict)
+
+  @@index([authorizerId, status])
+  @@index([spaceId, status])
+  @@index([status])
+}
+
+model EquipmentRequest {
+  id              String    @id @default(cuid())
+  eventId         String    @unique
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  description     String
+  rejectionReason String?
+  decisionNotes   String?
+  authorizerId    String?
+  revisionCount   Int       @default(1)
+  requestedAt     DateTime  @default(now())
+  resolvedAt      DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  event      Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  authorizer User?                  @relation("EquipmentRequestAuthorizer", fields: [authorizerId], references: [id], onDelete: SetNull)
+  items      EquipmentRequestType[]
+
+  @@index([status])
+  @@index([authorizerId, status])
+}
+
+model EquipmentRequestType {
+  id                 String  @id @default(cuid())
+  equipmentRequestId String
+  equipmentTypeId    String
+  notes              String?
+
+  equipmentRequest EquipmentRequest @relation(fields: [equipmentRequestId], references: [id], onDelete: Cascade)
+  equipmentType    EquipmentType    @relation(fields: [equipmentTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([equipmentRequestId, equipmentTypeId])
+  @@index([equipmentRequestId])
+}
+
+model ScheduleChangeRequest {
+  id                         String    @id @default(cuid())
+  eventId                    String
+  spaceId                    String
+  requestedById              String
+  authorizerId               String
+  originalDate               String
+  originalStartTime          String
+  originalEndTime            String
+  originalCleaningEndTime    String
+  proposedDate               String
+  proposedStartTime          String
+  proposedEndTime            String
+  proposedCleaningEndTime    String
+  proposedStartMinutes       Int
+  proposedEndMinutes         Int
+  proposedCleaningEndMinutes Int
+  reason                     String
+  status                     String    @default("PENDING") // PENDING | APPROVED | REJECTED | EXPIRED
+  rejectionReason            String?
+  requestedAt                DateTime  @default(now())
+  resolvedAt                 DateTime?
+  updatedAt                  DateTime  @updatedAt
+
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  space       Space        @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  requestedBy User         @relation("ScheduleChangeRequester", fields: [requestedById], references: [id], onDelete: Restrict)
+  authorizer  User         @relation("ScheduleChangeAuthorizer", fields: [authorizerId], references: [id], onDelete: Restrict)
+  reservation Reservation?
+
+  @@index([eventId, status])
+  @@index([authorizerId, status])
+  @@index([spaceId, proposedDate, status])
+}
+
+model Reservation {
+  id                      String   @id @default(cuid())
+  eventId                 String
+  spaceId                 String
+  scheduleChangeRequestId String?  @unique
+  reservationType         String   @default("ORIGINAL") // ORIGINAL | SCHEDULE_CHANGE
+  status                  String   @default("PROVISIONAL") // PROVISIONAL | APPROVED | RELEASED
+  date                    String   // YYYY-MM-DD
+  startTime               String   // HH:mm
+  endTime                 String   // HH:mm
+  cleaningEndTime         String   // HH:mm
+  startMinutes            Int
+  endMinutes              Int
+  cleaningEndMinutes      Int
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  event                 Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  space                 Space                  @relation(fields: [spaceId], references: [id], onDelete: Restrict)
+  scheduleChangeRequest ScheduleChangeRequest? @relation(fields: [scheduleChangeRequestId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, date, status])
+  @@index([eventId, status])
+  @@index([date, status])
+}
+
+model EventEvidence {
+  id                String   @id @default(cuid())
+  eventId           String
+  fileName          String
+  storedName        String
+  filePath          String
+  fileSize          Int
+  mimeType          String   @default("application/pdf")
+  category          String   @default("SUPPORTING_DOCUMENT") // SUPPORTING_DOCUMENT | CLOSURE_EVIDENCE
+  isArchived        Boolean  @default(false)
+  replacedById      String?
+  replacementReason String?
+  uploadedById      String
+  isDemo            Boolean  @default(false)
+  uploadedAt        DateTime @default(now())
+
+  event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploadedBy User  @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  @@index([eventId])
+  @@index([eventId, category])
+}
+
+model EventAttendanceConfig {
+  id                       String    @id @default(cuid())
+  eventId                  String    @unique
+  accessMode               String    @default("RESTRICTED") // OPEN | RESTRICTED
+  registrationEnabled      Boolean   @default(false)
+  publicRegistrationToken  String    @unique
+  registrationStartAt      DateTime?
+  registrationEndAt        DateTime?
+  checkInOpen              Boolean   @default(false)
+  checkInClosedAt          DateTime?
+  institutionalEmailDomain String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([publicRegistrationToken])
+  @@index([accessMode])
+}
+
+model EventAttendee {
+  id                 String    @id @default(cuid())
+  eventId            String
+  attendeeType       String    // STUDENT | TEACHER | ADMIN_STAFF | EXTERNAL_GUEST
+  fullName           String
+  email              String
+  enrollmentNumber   String?
+  careerId           String?
+  academicGradeId    String?
+  departmentAreaId   String?
+  organization       String?
+  registrationStatus String    @default("INVITED") // REGISTERED | INVITED | REVOKED
+  privacyAcceptedAt  DateTime?
+  createdById        String?
+  revokedAt          DateTime?
+  revokedById        String?
+  revocationReason   String?
+  isDemo             Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  event                Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  career               Career?                @relation(fields: [careerId], references: [id], onDelete: SetNull)
+  academicGrade        AcademicGrade?         @relation(fields: [academicGradeId], references: [id], onDelete: SetNull)
+  departmentArea       DepartmentArea?        @relation(fields: [departmentAreaId], references: [id], onDelete: SetNull)
+  createdBy            User?                  @relation("AttendeeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  revokedBy            User?                  @relation("AttendeeRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+  qrCredentials        AttendeeQrCredential[]
+  attendance           EventAttendance?
+  invitationDeliveries InvitationDelivery[]
+  scanLogs             AttendanceScanLog[]
+
+  @@index([eventId, registrationStatus])
+  @@index([eventId, email])
+  @@index([eventId, enrollmentNumber])
+  @@index([attendeeType])
+  @@index([careerId])
+  @@index([academicGradeId])
+  @@index([departmentAreaId])
+}
+
+model AttendeeQrCredential {
+  id              String    @id @default(cuid())
+  eventAttendeeId String
+  tokenHash       String    @unique
+  qrImagePath     String
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  revokedAt       DateTime?
+  expiresAt       DateTime?
+
+  attendee EventAttendee @relation(fields: [eventAttendeeId], references: [id], onDelete: Cascade)
+
+  @@index([eventAttendeeId, isActive])
+  @@index([tokenHash])
+}
+
+model EventAttendance {
+  id                 String   @id @default(cuid())
+  eventId            String
+  eventAttendeeId    String   @unique
+  checkedInAt        DateTime @default(now())
+  checkedInById      String?
+  registrationMethod String   @default("QR") // QR | MANUAL
+  notes              String?
+
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  attendee    EventAttendee @relation(fields: [eventAttendeeId], references: [id], onDelete: Cascade)
+  checkedInBy User?         @relation("AttendanceRegistrar", fields: [checkedInById], references: [id], onDelete: SetNull)
+
+  @@index([eventId, checkedInAt])
+}
+
+model InvitationDelivery {
+  id                String    @id @default(cuid())
+  eventAttendeeId   String
+  recipientEmail    String
+  status            String    @default("PENDING") // PENDING | SENT | FAILED
+  attempts          Int       @default(0)
+  sentAt            DateTime?
+  lastAttemptAt     DateTime?
+  errorMessage      String?
+  providerMessageId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  attendee EventAttendee @relation(fields: [eventAttendeeId], references: [id], onDelete: Cascade)
+
+  @@index([eventAttendeeId, status])
+  @@index([status])
+}
+
+model EventAccessOperator {
+  id           String   @id @default(cuid())
+  eventId      String
+  userId       String
+  assignedById String
+  assignedAt   DateTime @default(now())
+  active       Boolean  @default(true)
+
+  event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User  @relation("OperatorUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy User  @relation("OperatorAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, userId])
+  @@index([userId, active])
+}
+
+model AttendanceScanLog {
+  id          String   @id @default(cuid())
+  eventId     String
+  attendeeId  String?
+  operatorId  String
+  attemptedAt DateTime @default(now())
+  result      String   // AUTHORIZED | DUPLICATE | REVOKED | WRONG_EVENT | CHECKIN_CLOSED | INVALID_TOKEN
+  method      String   @default("QR") // QR | MANUAL
+  details     String?
+
+  event    Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  attendee EventAttendee? @relation(fields: [attendeeId], references: [id], onDelete: SetNull)
+  operator User           @relation("ScanOperator", fields: [operatorId], references: [id], onDelete: Restrict)
+
+  @@index([eventId, attemptedAt])
+  @@index([eventId, result])
+  @@index([operatorId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String?
+  type      String
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  isDemo    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  eventId      String?
+  action       String
+  entityType   String
+  entityId     String
+  summary      String
+  reason       String?
+  previousData String?
+  newData      String?
+  isDemo       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
