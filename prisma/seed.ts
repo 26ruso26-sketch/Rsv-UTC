@@ -2,6 +2,23 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
+
+// Carga variables desde .env local si existen (sin sobrescribir las ya definidas en el entorno)
+const localEnvPath = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(localEnvPath)) {
+  const envContent = fs.readFileSync(localEnvPath, 'utf8');
+  for (const rawLine of envContent.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eqIndex = line.indexOf('=');
+    if (eqIndex <= 0) continue;
+    const key = line.slice(0, eqIndex).trim();
+    const val = line.slice(eqIndex + 1).trim().replace(/^(['"])(.*)\1$/, '$2');
+    if (key && !(key in process.env)) {
+      process.env[key] = val;
+    }
+  }
+}
 import { hashPassword } from '../src/lib/crypto';
 import { generateInstitutionalPdfBuffer } from '../src/lib/pdf-generator';
 import { addCleaningMinutes, timeToMinutes } from '../src/lib/utils';
@@ -53,18 +70,17 @@ export async function runSeed() {
   console.log('✔ 4 edificios verificados (EDIF-1 a EDIF-4).');
 
   // 2. Usuarios Iniciales (6: director1..4, extuni, admin)
-  const getSeedPassword = (envKey: string): string => {
+  const getSeedPassword = (envKey: string): { plainPass: string; isExplicit: boolean } => {
     const configured = process.env[envKey]?.trim() || process.env.SEED_DEFAULT_PASSWORD?.trim();
-    if (configured) return configured;
+    if (configured) return { plainPass: configured, isExplicit: true };
     const generated = crypto.randomBytes(9).toString('base64url');
-    console.warn(`⚠ ${envKey} / SEED_DEFAULT_PASSWORD no definida en .env; se generó una contraseña temporal para ${envKey}.`);
-    return generated;
+    return { plainPass: generated, isExplicit: false };
   };
 
   const usersData = [
     {
       username: 'director1',
-      plainPass: getSeedPassword('SEED_DIRECTOR1_PASSWORD'),
+      ...getSeedPassword('SEED_DIRECTOR1_PASSWORD'),
       fullName: 'Dr. Roberto Méndez Garza (Director Edificio 1)',
       email: 'director1@utc.edu.mx',
       role: 'DIRECTOR',
@@ -73,7 +89,7 @@ export async function runSeed() {
     },
     {
       username: 'director2',
-      plainPass: getSeedPassword('SEED_DIRECTOR2_PASSWORD'),
+      ...getSeedPassword('SEED_DIRECTOR2_PASSWORD'),
       fullName: 'Dra. Laura Patricia Treviño (Directora Edificio 2)',
       email: 'director2@utc.edu.mx',
       role: 'DIRECTOR',
@@ -82,7 +98,7 @@ export async function runSeed() {
     },
     {
       username: 'director3',
-      plainPass: getSeedPassword('SEED_DIRECTOR3_PASSWORD'),
+      ...getSeedPassword('SEED_DIRECTOR3_PASSWORD'),
       fullName: 'Mtro. Carlos Eduardo Villarreal (Director Edificio 3)',
       email: 'director3@utc.edu.mx',
       role: 'DIRECTOR',
@@ -91,7 +107,7 @@ export async function runSeed() {
     },
     {
       username: 'director4',
-      plainPass: getSeedPassword('SEED_DIRECTOR4_PASSWORD'),
+      ...getSeedPassword('SEED_DIRECTOR4_PASSWORD'),
       fullName: 'Mtra. Sofía Alejandra Cantú (Directora Edificio 4)',
       email: 'director4@utc.edu.mx',
       role: 'DIRECTOR',
@@ -100,7 +116,7 @@ export async function runSeed() {
     },
     {
       username: 'extuni',
-      plainPass: getSeedPassword('SEED_EXTENSION_PASSWORD'),
+      ...getSeedPassword('SEED_EXTENSION_PASSWORD'),
       fullName: 'Lic. Fernando Elizondo (Extensión Universitaria)',
       email: 'extuni@utc.edu.mx',
       role: 'EXTENSION',
@@ -109,7 +125,7 @@ export async function runSeed() {
     },
     {
       username: 'admin',
-      plainPass: getSeedPassword('SEED_ADMIN_PASSWORD'),
+      ...getSeedPassword('SEED_ADMIN_PASSWORD'),
       fullName: 'Mtro. Ricardo Valdés (Administrador General)',
       email: 'admin@utc.edu.mx',
       role: 'SUPER_ADMIN',
@@ -121,6 +137,12 @@ export async function runSeed() {
   const usersByUsername: Record<string, { id: string; username: string; fullName: string }> = {};
   for (const u of usersData) {
     const passwordHash = hashPassword(u.plainPass);
+    const existing = await prisma.user.findUnique({ where: { username: u.username } });
+    if (!existing && !u.isExplicit) {
+      console.warn(
+        `⚠ SEED_*_PASSWORD / SEED_DEFAULT_PASSWORD no definida en .env; se generó una contraseña temporal para ${u.username}.`
+      );
+    }
     const record = await prisma.user.upsert({
       where: { username: u.username },
       update: {
@@ -129,7 +151,7 @@ export async function runSeed() {
         role: u.role,
         buildingId: u.buildingId,
         departmentLabel: u.departmentLabel,
-        passwordHash,
+        ...(u.isExplicit ? { passwordHash } : {}),
         active: true,
         isDemo: true,
       },
