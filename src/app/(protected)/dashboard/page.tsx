@@ -8,15 +8,16 @@ import {
   CheckCircle2,
   AlertTriangle,
   PlusCircle,
-  CheckSquare,
   ArrowRight,
+  ArrowUpRight,
   MapPin,
   Users,
   QrCode,
   FileWarning,
   ShieldCheck,
-  TrendingUp,
   RefreshCw,
+  Activity,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AppShell';
 import {
@@ -106,6 +107,159 @@ interface DashboardData {
   }[];
 }
 
+/* ------------------------------------------------------------------ */
+/* Componentes visuales locales (guía §5 y §7)                         */
+/* ------------------------------------------------------------------ */
+
+function MetricCard({
+  label,
+  value,
+  caption,
+  href,
+  tone = 'plain',
+}: {
+  label: string;
+  value: React.ReactNode;
+  caption: React.ReactNode;
+  href?: string;
+  tone?: 'plain' | 'feature';
+}) {
+  const feature = tone === 'feature';
+
+  const body = (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <p
+          className={`text-[10px] font-semibold uppercase tracking-[0.06em] ${
+            feature ? 'text-brand-gold' : 'text-muted'
+          }`}
+        >
+          {label}
+        </p>
+        {href && (
+          <span
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
+              feature
+                ? 'bg-white/10 text-white group-hover:bg-white/20'
+                : 'bg-surface-muted text-muted group-hover:bg-brand-soft group-hover:text-brand-deep'
+            }`}
+          >
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </span>
+        )}
+      </div>
+      <p
+        className={`mt-3 text-[32px] font-semibold leading-none tracking-tight ${
+          feature ? 'text-white' : 'text-ink'
+        }`}
+      >
+        {value}
+      </p>
+      <p className={`mt-2 text-[11px] ${feature ? 'text-white/70' : 'text-muted'}`}>{caption}</p>
+    </>
+  );
+
+  const className = `group flex flex-col p-[15px] ${
+    feature ? 'ui-card-feature' : 'ui-card-interactive'
+  }`;
+
+  return href ? (
+    <Link href={href} className={className}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
+  );
+}
+
+function BarRow({
+  label,
+  value,
+  total,
+  color,
+  hint,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  color: string;
+  hint?: string;
+}) {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="truncate text-[12px] font-medium text-ink">{label}</span>
+        <span className="shrink-0 text-[11px] text-muted">
+          <span className="font-semibold text-ink">{value}</span>
+          {hint ? ` · ${hint}` : ` · ${pct}%`}
+        </span>
+      </div>
+      <div
+        className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted"
+        role="img"
+        aria-label={`${label}: ${value} de ${total} (${pct}%)`}
+      >
+        <div
+          className="h-full rounded-full transition-[width] duration-500 ease-out"
+          style={{ width: `${Math.min(100, pct)}%`, background: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Donut({ pct, caption }: { pct: number; caption: string }) {
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const safePct = Math.max(0, Math.min(100, pct));
+  const dash = (safePct / 100) * circumference;
+
+  return (
+    <div className="relative mx-auto h-[132px] w-[132px] shrink-0">
+      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--color-surface-muted)"
+          strokeWidth="11"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={radius}
+          fill="none"
+          stroke="var(--color-primary)"
+          strokeWidth="11"
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${circumference - dash}`}
+          className="transition-[stroke-dasharray] duration-700 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[26px] font-semibold leading-none tracking-tight text-ink">
+          {safePct}%
+        </span>
+        <span className="mt-1 max-w-[92px] text-center text-[9px] font-medium uppercase tracking-[0.06em] text-muted">
+          {caption}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const ATTENDEE_CATEGORIES = [
+  { key: 'STUDENT', label: 'Alumnos', color: 'var(--color-primary-deep)' },
+  { key: 'TEACHER', label: 'Docentes', color: 'var(--color-primary)' },
+  { key: 'ADMIN_STAFF', label: 'Personal administrativo', color: 'var(--color-mint)' },
+  { key: 'EXTERNAL_GUEST', label: 'Invitados externos', color: 'var(--color-gold)' },
+];
+
+/* ------------------------------------------------------------------ */
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -158,7 +312,9 @@ export default function DashboardPage() {
       }
 
       if (!parsed || typeof parsed !== 'object' || !('stats' in parsed)) {
-        throw new Error('La respuesta del dashboard no contiene la estructura de indicadores esperada.');
+        throw new Error(
+          'La respuesta del dashboard no contiene la estructura de indicadores esperada.'
+        );
       }
 
       setData(parsed as DashboardData);
@@ -180,432 +336,453 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-sm text-slate-500">
-        Cargando indicadores ejecutivos y métricas de asistencia...
+      <div className="space-y-5">
+        <div className="h-16 animate-pulse rounded-card bg-surface-muted" />
+        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-[118px] animate-pulse rounded-card bg-surface-muted" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
+          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-5" />
+          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-4" />
+          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-3" />
+        </div>
+        <p className="text-center text-xs text-muted">
+          Cargando indicadores ejecutivos y métricas de asistencia…
+        </p>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="max-w-xl mx-auto mt-8 bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-900 space-y-4 shadow-sm">
+      <div className="mx-auto mt-6 max-w-xl space-y-4 rounded-card border border-[#f0d4d3] bg-[#F9E8E7] p-6">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#B85D59]" />
           <div className="space-y-1">
-            <h2 className="text-sm font-bold">
+            <h2 className="text-sm font-semibold text-[#8f4340]">
               No se pudieron cargar los indicadores del dashboard
             </h2>
-            <p className="text-xs text-rose-800">
+            <p className="text-xs text-[#B85D59]">
               {error || 'No se recibieron datos válidos desde el servidor.'}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => void loadDashboard()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition-colors"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reintentar
-          </button>
-        </div>
+        <button type="button" onClick={() => void loadDashboard()} className="ui-btn-deep">
+          <RefreshCw className="h-3.5 w-3.5" />
+          Reintentar
+        </button>
       </div>
     );
   }
 
   const { stats } = data;
+  const lc = stats.lifecycleCounts;
+  const att = stats.attendanceSummary;
+  const lifecycleTotal = Math.max(1, stats.totalEvents);
+
+  const lifecycleSeries = [
+    {
+      label: 'Pendientes de autorización',
+      value: lc.PENDING_APPROVAL,
+      color: 'var(--color-warning)',
+    },
+    { label: 'Programados', value: lc.SCHEDULED, color: 'var(--color-primary)' },
+    { label: 'En curso', value: lc.IN_PROGRESS, color: 'var(--color-mint)' },
+    {
+      label: 'Pendientes de evidencia',
+      value: lc.COMPLETED_PENDING_EVIDENCE,
+      color: 'var(--color-gold)',
+    },
+    { label: 'Cerrados con PDF', value: lc.CLOSED, color: 'var(--color-primary-deep)' },
+    { label: 'Rechazados', value: lc.REJECTED, color: 'var(--color-danger)' },
+    { label: 'Vencidos', value: lc.EXPIRED, color: '#b9c2bd' },
+  ];
+
+  const hasPendingInbox =
+    data.pendingSpaceRequests.length > 0 ||
+    data.pendingEquipmentRequests.length > 0 ||
+    data.pendingScheduleChanges.length > 0;
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 rounded-2xl p-6 text-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-2">
-            Panel Institucional · SREU Fase 2
-          </span>
-          <h1 className="text-xl sm:text-2xl font-bold">Bienvenido, {user?.fullName}</h1>
-          <p className="text-xs sm:text-sm text-emerald-100/80 mt-1">
+    <div className="space-y-5">
+      {/* ===================== Encabezado de contenido (guía §4) ===================== */}
+      <div className="flex flex-col justify-between gap-3.5 md:flex-row md:items-end">
+        <div className="min-w-0">
+          <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-[28px]">
+            Bienvenido, {user?.fullName?.split(' ')[0] || 'usuario'}
+          </h1>
+          <p className="mt-1 max-w-2xl text-[13px] text-muted">
             {user?.buildingName
-              ? `Responsable de ${user.buildingName} — Control de ciclo de vida de eventos, cierre documental PDF y asistencia QR.`
+              ? `Responsable de ${user.buildingName} · ciclo de vida de eventos, cierre documental y asistencia QR.`
               : `${
-                  user?.departmentLabel || 'Coordinación Institucional'
-                } — Supervisión global de recintos, autorizaciones y control de acceso QR.`}
+                  user?.departmentLabel || 'Coordinación institucional'
+                } · supervisión global de recintos, autorizaciones y control de acceso QR.`}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <Link
-            href="/escaner"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-colors"
-          >
-            <QrCode className="w-4 h-4 text-emerald-300" />
-            Escáner QR de Acceso
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Link href="/escaner" className="ui-btn-secondary">
+            <QrCode className="h-3.5 w-3.5 text-brand" />
+            Escáner QR
           </Link>
-          <Link
-            href="/eventos/nuevo"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow transition-colors"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Registrar Evento
+          <Link href="/eventos/nuevo" className="ui-btn-primary">
+            <PlusCircle className="h-3.5 w-3.5" />
+            Registrar evento
           </Link>
         </div>
       </div>
 
-      {/* Mandatory Closure Pending Alert */}
+      {/* ===================== Aviso de cierre documental pendiente ===================== */}
       {stats.pendingEvidenceClosureCount > 0 && (
-        <div className="p-4 rounded-xl bg-orange-50 border border-orange-300 text-orange-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-col justify-between gap-3 rounded-card border border-brand-gold/35 bg-brand-gold-soft p-4 sm:flex-row sm:items-center">
           <div className="flex items-start gap-3">
-            <FileWarning className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
-            <div className="text-xs">
-              <p className="font-bold text-sm">
-                Atención: {stats.pendingEvidenceClosureCount} evento(s) concluido(s) pendiente(s) de
-                evidencia documental de cierre
+            <FileWarning className="mt-0.5 h-4 w-4 shrink-0 text-[#A47B1E]" />
+            <div className="text-[12px] text-[#7a5c16]">
+              <p className="font-semibold text-[#6b4f12]">
+                {stats.pendingEvidenceClosureCount} evento(s) concluido(s) sin evidencia documental
+                de cierre
               </p>
-              <p className="text-orange-900 mt-0.5">
-                Los eventos cuya hora de finalización ya concluyó requieren al menos un archivo PDF
-                de evidencia de realización para pasar a estado Cerrado (`CLOSED`).
+              <p className="mt-0.5">
+                Los eventos cuya hora de finalización ya concluyó requieren al menos un PDF de
+                evidencia para pasar a estado Cerrado.
               </p>
             </div>
           </div>
           <Link
             href="/eventos?lifecycle=COMPLETED_PENDING_EVIDENCE"
-            className="px-3.5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shrink-0"
+            className="ui-btn shrink-0 bg-[#A47B1E] text-white hover:bg-[#8a681a]"
           >
-            Ver Eventos Pendientes de Evidencia
+            Ver pendientes
           </Link>
         </div>
       )}
 
-      {/* Lifecycle KPI Grid (Section 4 & 7) */}
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-          Ciclo de Vida de Eventos y Bandeja de Autorizaciones
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-slate-500">Total Eventos</p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{stats.totalEvents}</p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Abiertos: {stats.attendanceSummary.openEventsCount} · Restr.:{' '}
-              {stats.attendanceSummary.restrictedEventsCount}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-sky-700">Programados</p>
-            <p className="text-2xl font-black text-sky-900 mt-1">
-              {stats.lifecycleCounts.SCHEDULED}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              En curso hoy: {stats.lifecycleCounts.IN_PROGRESS}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-orange-700">
-              Pend. Evidencia PDF
-            </p>
-            <p className="text-2xl font-black text-orange-700 mt-1">
-              {stats.lifecycleCounts.COMPLETED_PENDING_EVIDENCE}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">Concluidos sin cierre</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-emerald-700">
-              Cerrados (CLOSED)
-            </p>
-            <p className="text-2xl font-black text-emerald-700 mt-1">
-              {stats.lifecycleCounts.CLOSED}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">Con PDF de realización</p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-amber-700">
-              Por Autorizar (Míos)
-            </p>
-            <p className="text-2xl font-black text-amber-700 mt-1">
-              {stats.pendingAuthorizationsForMe}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Esp: {stats.pendingSpaceForMe} · Eq: {stats.pendingEquipmentForMe} · Hor:{' '}
-              {stats.pendingScheduleForMe}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase text-slate-500">
-              Rechazados / Vencidos
-            </p>
-            <p className="text-2xl font-black text-slate-800 mt-1">
-              {stats.lifecycleCounts.REJECTED + stats.lifecycleCounts.EXPIRED}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              Rech: {stats.lifecycleCounts.REJECTED} · Venc: {stats.lifecycleCounts.EXPIRED}
-            </p>
-          </div>
-        </div>
+      {/* ===================== Fila 1 · Tarjetas de métricas (guía §7.4) ===================== */}
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <MetricCard
+          tone="feature"
+          label="Total de eventos"
+          value={stats.totalEvents}
+          href="/eventos"
+          caption={
+            <>
+              Abiertos: {att.openEventsCount} · Restringidos: {att.restrictedEventsCount}
+            </>
+          }
+        />
+        <MetricCard
+          label="Programados"
+          value={lc.SCHEDULED}
+          href="/eventos?lifecycle=SCHEDULED"
+          caption={<>En curso ahora: {lc.IN_PROGRESS} · Hoy: {stats.todayEventsCount}</>}
+        />
+        <MetricCard
+          label="Pend. evidencia PDF"
+          value={lc.COMPLETED_PENDING_EVIDENCE}
+          href="/eventos?lifecycle=COMPLETED_PENDING_EVIDENCE"
+          caption="Concluidos sin cierre documental"
+        />
+        <MetricCard
+          label="Cerrados con PDF"
+          value={lc.CLOSED}
+          href="/reportes"
+          caption={<>Rechazados/vencidos: {lc.REJECTED + lc.EXPIRED}</>}
+        />
       </div>
 
-      {/* Attendance & QR Control KPIs (Section 21) */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <QrCode className="w-5 h-5 text-emerald-700" />
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Métricas Globales de Registro de Asistentes y Control de Acceso QR
-              </h2>
-              <p className="text-xs text-slate-500">
-                Participación consolidada en tiempo real desde SQLite
+      {/* ===================== Fila 2 · Ciclo de vida, asistencia y recordatorios ===================== */}
+      <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
+        {/* Gráfico de ciclo de vida */}
+        <section className="ui-card p-[17px] lg:col-span-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-brand" />
+              <div>
+                <h2 className="ui-card-title">Ciclo de vida de eventos</h2>
+                <p className="ui-caption mt-0.5">Distribución sobre {stats.totalEvents} evento(s)</p>
+              </div>
+            </div>
+            <Link
+              href="/reportes"
+              className="shrink-0 text-[11px] font-semibold text-brand hover:text-brand-dark"
+            >
+              Reportes
+            </Link>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {lifecycleSeries.map((item) => (
+              <BarRow
+                key={item.label}
+                label={item.label}
+                value={item.value}
+                total={lifecycleTotal}
+                color={item.color}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Asistencia y control QR */}
+        <section className="ui-card p-[17px] lg:col-span-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <QrCode className="h-4 w-4 text-brand" />
+              <div>
+                <h2 className="ui-card-title">Asistencia y acceso QR</h2>
+                <p className="ui-caption mt-0.5">Participación consolidada</p>
+              </div>
+            </div>
+          </div>
+
+          <Donut pct={att.globalAttendancePct} caption="Asistencia efectiva" />
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-surface-muted p-2.5">
+              <p className="ui-label">Registrados</p>
+              <p className="mt-1 text-[18px] font-semibold leading-none text-ink">
+                {att.totalRegisteredActive}
+              </p>
+              <p className="ui-caption mt-1">Revocados: {att.totalRevoked}</p>
+            </div>
+            <div className="rounded-xl bg-brand-soft/70 p-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand-deep">
+                Entradas
+              </p>
+              <p className="mt-1 text-[18px] font-semibold leading-none text-brand-deep">
+                {att.totalCheckedIn}
+              </p>
+              <p className="mt-1 text-[11px] text-brand-deep/70">
+                Sin ingreso: {att.totalPendingCheckIn}
               </p>
             </div>
           </div>
+
+          <div className="mt-3 space-y-2.5 border-t border-line pt-3">
+            {ATTENDEE_CATEGORIES.map((cat) => {
+              const bucket = att.byAttendeeType[cat.key] || { registered: 0, checkedIn: 0 };
+              return (
+                <BarRow
+                  key={cat.key}
+                  label={cat.label}
+                  value={bucket.checkedIn}
+                  total={Math.max(1, bucket.registered)}
+                  color={cat.color}
+                  hint={`de ${bucket.registered}`}
+                />
+              );
+            })}
+          </div>
+
+          <p className="ui-caption mt-3">
+            Ocupación promedio de recintos: {att.globalOccupancyPct}% en{' '}
+            {att.eventsWithAttendanceCount} evento(s) con padrón QR.
+          </p>
+        </section>
+
+        {/* Recordatorios */}
+        <section className="ui-card flex flex-col p-[17px] lg:col-span-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-brand-gold" />
+            <h2 className="ui-card-title">Recordatorios</h2>
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <Link
+              href="/autorizaciones"
+              className="block rounded-xl border border-line bg-surface-muted p-3 transition-colors hover:bg-brand-soft/50"
+            >
+              <p className="ui-label">Por autorizar (míos)</p>
+              <p className="mt-1 text-[24px] font-semibold leading-none text-ink">
+                {stats.pendingAuthorizationsForMe}
+              </p>
+              <p className="ui-caption mt-1.5">
+                Espacio {stats.pendingSpaceForMe} · Equipo {stats.pendingEquipmentForMe} · Horario{' '}
+                {stats.pendingScheduleForMe}
+              </p>
+            </Link>
+
+            <div className="rounded-xl border border-line p-3">
+              <p className="ui-label">Eventos de hoy</p>
+              <p className="mt-1 text-[24px] font-semibold leading-none text-ink">
+                {stats.todayEventsCount}
+              </p>
+              <p className="ui-caption mt-1.5">En curso: {lc.IN_PROGRESS}</p>
+            </div>
+          </div>
+
+          {att.topCareers.length > 0 && (
+            <div className="mt-3 border-t border-line pt-3">
+              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-muted">
+                <GraduationCap className="h-3.5 w-3.5 text-brand" />
+                Carreras con más entradas
+              </p>
+              <ul className="mt-2.5 space-y-1.5">
+                {att.topCareers.slice(0, 4).map((career) => (
+                  <li key={career.name} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-[11px] text-ink">{career.name}</span>
+                    <span className="shrink-0 text-[11px] font-semibold text-brand-deep">
+                      {career.checkedIn}/{career.registered}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <Link
             href="/reportes"
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1"
+            className="ui-btn-ghost mt-auto w-full justify-between pt-2 text-[11px]"
           >
-            Ver desglose por carrera y grado en Reportes <ArrowRight className="w-3.5 h-3.5" />
+            Desglose completo
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[11px] font-bold uppercase text-slate-500">
-              Asistentes Registrados / Invitados
-            </p>
-            <p className="text-2xl font-black text-slate-900 mt-1">
-              {stats.attendanceSummary.totalRegisteredActive}
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Revocados: {stats.attendanceSummary.totalRevoked}
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
-            <p className="text-[11px] font-bold uppercase text-emerald-800">
-              Entradas Validadas (Check-in)
-            </p>
-            <p className="text-2xl font-black text-emerald-700 mt-1">
-              {stats.attendanceSummary.totalCheckedIn}
-            </p>
-            <p className="text-[11px] text-emerald-800 mt-0.5">
-              Pendientes de ingreso: {stats.attendanceSummary.totalPendingCheckIn}
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[11px] font-bold uppercase text-slate-500">
-              Porcentaje de Asistencia Efectiva
-            </p>
-            <p className="text-2xl font-black text-slate-900 mt-1 flex items-center gap-1.5">
-              {stats.attendanceSummary.globalAttendancePct}%
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              (Entradas / Registrados activos) × 100
-            </p>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
-            <p className="text-[11px] font-bold uppercase text-slate-500">
-              Ocupación Promedio de Recintos
-            </p>
-            <p className="text-2xl font-black text-slate-900 mt-1">
-              {stats.attendanceSummary.globalOccupancyPct}%
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              En {stats.attendanceSummary.eventsWithAttendanceCount} evento(s) con padrón QR
-            </p>
-          </div>
-        </div>
-
-        {/* Breakdown by Attendee Category */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 text-xs">
-          {[
-            { key: 'STUDENT', label: 'Alumnos' },
-            { key: 'TEACHER', label: 'Docentes' },
-            { key: 'ADMIN_STAFF', label: 'Personal Administrativo' },
-            { key: 'EXTERNAL_GUEST', label: 'Invitados Externos' },
-          ].map((cat) => {
-            const bucket = stats.attendanceSummary.byAttendeeType[cat.key] || {
-              registered: 0,
-              checkedIn: 0,
-            };
-            return (
-              <div
-                key={cat.key}
-                className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200/70 bg-white"
-              >
-                <span className="font-semibold text-slate-700">{cat.label}</span>
-                <span className="font-bold text-slate-900">
-                  {bucket.checkedIn}{' '}
-                  <span className="text-slate-400 font-normal">/ {bucket.registered}</span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        </section>
       </div>
 
-      {/* Main Content Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 cols: Upcoming & Recent Events */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-700" />
-                <h2 className="text-sm font-bold text-slate-900">
-                  Eventos Programados y Recientes
-                </h2>
-              </div>
-              <Link
-                href="/eventos"
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1"
-              >
-                Ver todos <ArrowRight className="w-3.5 h-3.5" />
+      {/* ===================== Fila 3 · Eventos y bandeja ===================== */}
+      <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
+        {/* Eventos programados */}
+        <section className="ui-card overflow-hidden lg:col-span-8">
+          <div className="flex items-center justify-between gap-3 border-b border-line px-[17px] py-3.5">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-brand" />
+              <h2 className="ui-card-title">Eventos programados y recientes</h2>
+            </div>
+            <Link
+              href="/eventos"
+              className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-brand hover:text-brand-dark"
+            >
+              Ver todos <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {data.upcomingEvents.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <Calendar className="mx-auto h-7 w-7 text-line" />
+              <p className="mt-2 text-xs text-muted">No hay eventos próximos programados.</p>
+              <Link href="/eventos/nuevo" className="ui-btn-secondary mt-3">
+                <PlusCircle className="h-3.5 w-3.5 text-brand" />
+                Registrar el primero
               </Link>
             </div>
-
-            {data.upcomingEvents.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
-                No hay eventos próximos programados.
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-200/80">
-                {data.upcomingEvents.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="p-4 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <EventLifecycleBadge status={ev.lifecycleStatus} />
-                        <CriticalityBadge level={ev.criticalityLevel} />
-                        <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
-                      </div>
-                      <Link
-                        href={`/eventos/${ev.id}`}
-                        className="text-sm font-bold text-slate-900 hover:text-emerald-700 block"
-                      >
-                        {ev.name}
-                      </Link>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          {ev.space.name}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
-                          {ev.date} · {ev.startTime} - {ev.endTime}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
-                          Resp: {ev.responsibleName}
-                        </span>
-                      </div>
+          ) : (
+            <ul className="divide-y divide-line">
+              {data.upcomingEvents.map((ev) => (
+                <li
+                  key={ev.id}
+                  className="flex flex-col justify-between gap-3 px-[17px] py-3.5 transition-colors hover:bg-surface-muted/60 sm:flex-row sm:items-center"
+                >
+                  <div className="min-w-0 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <EventLifecycleBadge status={ev.lifecycleStatus} compact />
+                      <CriticalityBadge level={ev.criticalityLevel} compact />
+                      <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Link
-                        href={`/eventos/${ev.id}`}
-                        className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50/50"
-                      >
-                        Abrir Expediente
-                      </Link>
+                    <Link
+                      href={`/eventos/${ev.id}`}
+                      className="block truncate text-[13px] font-semibold text-ink hover:text-brand"
+                    >
+                      {ev.name}
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-muted">
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {ev.space.name}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {ev.date} · {ev.startTime}–{ev.endTime}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {ev.responsibleName}
+                      </span>
                     </div>
                   </div>
-                ))}
+                  <Link
+                    href={`/eventos/${ev.id}`}
+                    className="ui-btn-secondary shrink-0 self-start text-[11px] sm:self-center"
+                  >
+                    Abrir expediente
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Bandeja de autorizaciones */}
+        <section className="ui-card overflow-hidden lg:col-span-4">
+          <div className="flex items-center justify-between gap-3 border-b border-line px-[17px] py-3.5">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-brand-gold" />
+              <h2 className="ui-card-title">Bandeja de autorizaciones</h2>
+            </div>
+            <Link
+              href="/autorizaciones"
+              className="shrink-0 text-[11px] font-semibold text-brand hover:text-brand-dark"
+            >
+              Ir
+            </Link>
+          </div>
+
+          <div className="space-y-2 p-[17px]">
+            {!hasPendingInbox ? (
+              <div className="py-7 text-center">
+                <CheckCircle2 className="mx-auto h-7 w-7 text-brand-mint" />
+                <p className="mt-2 text-xs text-muted">
+                  No tienes solicitudes pendientes por resolver.
+                </p>
               </div>
+            ) : (
+              <>
+                {data.pendingSpaceRequests.map((req) => (
+                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
+                    <span className="ui-chip-progress">Solicitud de espacio</span>
+                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
+                      {req.event.name}
+                    </p>
+                    <p className="ui-caption mt-0.5 truncate">
+                      {req.event.space.name} · {req.event.date} ({req.event.startTime})
+                    </p>
+                  </div>
+                ))}
+
+                {data.pendingEquipmentRequests.map((req) => (
+                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
+                    <span className="ui-chip-info">Solicitud de equipo</span>
+                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
+                      {req.event.name}
+                    </p>
+                    <p className="ui-caption mt-0.5 truncate">
+                      {req.event.space.name} · {req.event.date}
+                    </p>
+                  </div>
+                ))}
+
+                {data.pendingScheduleChanges.map((req) => (
+                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
+                    <span className="ui-chip bg-brand-soft text-brand-deep">Cambio de horario</span>
+                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
+                      {req.event.name}
+                    </p>
+                    <p className="ui-caption mt-0.5 truncate">
+                      Propuesto: {req.proposedDate} ({req.proposedStartTime}–
+                      {req.proposedEndTime})
+                    </p>
+                  </div>
+                ))}
+
+                <Link href="/autorizaciones" className="ui-btn-deep w-full">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Resolver solicitudes
+                </Link>
+              </>
             )}
           </div>
-        </div>
-
-        {/* Right Col: Pending Authorizations Inbox */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-600" />
-                <h2 className="text-sm font-bold text-slate-900">Bandeja de Autorizaciones</h2>
-              </div>
-              <Link
-                href="/autorizaciones"
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
-              >
-                Ir a bandeja
-              </Link>
-            </div>
-
-            <div className="p-4 space-y-3">
-              {data.pendingSpaceRequests.length === 0 &&
-              data.pendingEquipmentRequests.length === 0 &&
-              data.pendingScheduleChanges.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-500">
-                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                  No tienes solicitudes pendientes por resolver.
-                </div>
-              ) : (
-                <>
-                  {data.pendingSpaceRequests.map((req) => (
-                    <div
-                      key={req.id}
-                      className="p-3 rounded-lg border border-amber-200 bg-amber-50/60 text-xs space-y-1"
-                    >
-                      <span className="text-[10px] font-bold uppercase text-amber-800">
-                        Solicitud de Espacio
-                      </span>
-                      <p className="font-bold text-slate-900">{req.event.name}</p>
-                      <p className="text-slate-600">
-                        {req.event.space.name} · {req.event.date} ({req.event.startTime})
-                      </p>
-                    </div>
-                  ))}
-
-                  {data.pendingEquipmentRequests.map((req) => (
-                    <div
-                      key={req.id}
-                      className="p-3 rounded-lg border border-blue-200 bg-blue-50/60 text-xs space-y-1"
-                    >
-                      <span className="text-[10px] font-bold uppercase text-blue-800">
-                        Solicitud de Equipo
-                      </span>
-                      <p className="font-bold text-slate-900">{req.event.name}</p>
-                      <p className="text-slate-600">
-                        {req.event.space.name} · {req.event.date}
-                      </p>
-                    </div>
-                  ))}
-
-                  {data.pendingScheduleChanges.map((req) => (
-                    <div
-                      key={req.id}
-                      className="p-3 rounded-lg border border-purple-200 bg-purple-50/60 text-xs space-y-1"
-                    >
-                      <span className="text-[10px] font-bold uppercase text-purple-800">
-                        Cambio de Horario
-                      </span>
-                      <p className="font-bold text-slate-900">{req.event.name}</p>
-                      <p className="text-slate-600">
-                        Propuesto: {req.proposedDate} ({req.proposedStartTime}-{req.proposedEndTime}
-                        )
-                      </p>
-                    </div>
-                  ))}
-
-                  <Link
-                    href="/autorizaciones"
-                    className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5"
-                  >
-                    <CheckSquare className="w-3.5 h-3.5" />
-                    Resolver Solicitudes
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   );

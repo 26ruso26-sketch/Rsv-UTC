@@ -1,0 +1,385 @@
+/* ===========================================================================
+   Plantilla institucional imprimible — REPORTE DE MÉTRICAS DE ASISTENCIA
+   Basada en docs/plantillas/plantilla-reporte-metricas-erm-utc.html
+   Formato A4 vertical, listo para "Imprimir → Guardar como PDF".
+   =========================================================================== */
+
+.erm {
+  --green: #114b36;
+  --gold: #c5a049;
+  --gold-text: #e8c66a;
+  --line: #64748b;
+  --soft: #e6f2ed;
+  --ink: #1f2937;
+  --muted: #475569;
+
+  color: var(--ink);
+  font-family: 'Inter', Roboto, 'Liberation Sans', Arial, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.erm * {
+  box-sizing: border-box;
+}
+
+/* --- Hoja --- */
+.erm-page {
+  position: relative;
+  display: flex;
+  width: 210mm;
+  min-height: 297mm;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 14mm 18mm 20mm;
+  background: #fff;
+}
+
+/* --- Banda superior --- */
+.erm-header {
+  display: flex;
+  height: 17mm;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid var(--gold);
+  background: var(--green);
+  padding: 0 6mm;
+}
+
+.erm-header .u {
+  color: var(--gold-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.erm-header .b {
+  line-height: 1.1;
+  text-align: right;
+}
+
+.erm-header .b .t {
+  color: var(--gold-text);
+  font-size: 21px;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.erm-header .b .s {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* --- Título y folio --- */
+.erm-titlebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6mm;
+  margin-top: 5mm;
+}
+
+.erm-titlebar .k {
+  color: var(--green);
+  font-size: 16px;
+}
+
+.erm-titlebar h1 {
+  margin: 2mm 0 0;
+  color: var(--green);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.erm-titlebar .sub {
+  margin: 1.5mm 0 0;
+  color: var(--muted);
+  font-size: 9.5px;
+}
+
+.erm-qr {
+  display: flex;
+  height: 22mm;
+  width: 22mm;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  color: #94a3b8;
+  font-size: 8px;
+  padding: 1mm;
+}
+
+.erm-qr img,
+.erm-qr svg {
+  height: 100%;
+  width: 100%;
+}
+
+/* --- Cajas de datos --- */
+.erm-box {
+  border: 1px solid var(--line);
+  margin-top: 5mm;
+}
+
+.erm-row {
+  min-height: 13mm;
+  padding: 2.6mm 3.5mm;
+}
+
+.erm-row + .erm-row {
+  border-top: 1px solid var(--line);
+}
+
+.erm-lbl {
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.erm-val {
+  color: var(--ink);
+  font-size: 10.5px;
+  margin-top: 1mm;
+}
+
+.erm-info {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.erm-info .erm-row + .erm-row {
+  border-top: 0;
+  border-left: 1px solid var(--line);
+}
+
+/* --- Indicadores --- */
+.erm-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3mm;
+  margin-top: 4mm;
+}
+
+.erm-kpi {
+  display: flex;
+  height: 18mm;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green);
+  padding: 2.4mm 3.5mm;
+}
+
+.erm-kpi .k {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.erm-kpi .v {
+  flex: 1;
+  color: var(--green);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.erm-kpi .d {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+/* --- Secciones con tabla --- */
+.erm-sec {
+  margin-top: 4mm;
+}
+
+.erm-sec h2 {
+  margin: 0;
+  border-bottom: 2px solid var(--gold);
+  background: var(--green);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2.4mm 3.5mm;
+}
+
+.erm table {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-collapse: collapse;
+}
+
+.erm th {
+  background: var(--soft);
+  border-bottom: 1px solid var(--line);
+  color: var(--green);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 2mm 3mm;
+  text-transform: uppercase;
+}
+
+.erm td {
+  border-bottom: 1px solid #cbd5e1;
+  font-size: 10px;
+  height: 6.6mm;
+  padding: 0 3mm;
+}
+
+.erm tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.erm th + th,
+.erm td + td {
+  border-left: 1px solid #cbd5e1;
+}
+
+.erm .c {
+  text-align: center;
+}
+
+.erm .l {
+  text-align: left;
+}
+
+.erm tr.total td {
+  background: var(--soft);
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.erm .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+}
+
+.erm .muted {
+  color: var(--muted);
+}
+
+/* --- Observación y firma --- */
+.erm-obs {
+  min-height: 15mm;
+}
+
+.erm-obs-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 1.45;
+  margin-top: 1mm;
+  outline: none;
+  resize: none;
+}
+
+.erm-sig {
+  align-self: flex-end;
+  margin-top: auto;
+  padding-top: 8mm;
+  text-align: center;
+  width: 62mm;
+}
+
+.erm-sig .name {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 10px;
+  outline: none;
+  text-align: center;
+  width: 100%;
+  padding-bottom: 1.5mm;
+}
+
+.erm-sig .line {
+  border-top: 1px solid var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+  padding-top: 1.5mm;
+}
+
+.erm-sig .s {
+  color: var(--muted);
+  font-size: 9px;
+  margin-top: 1mm;
+}
+
+/* --- Pie --- */
+.erm-footer {
+  position: absolute;
+  bottom: 11mm;
+  left: 18mm;
+  right: 18mm;
+  display: flex;
+  justify-content: space-between;
+  border-top: 3px solid var(--green);
+  color: var(--muted);
+  font-size: 8.5px;
+  padding-top: 2.5mm;
+}
+
+/* --- Vista en pantalla --- */
+@media screen {
+  .erm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: var(--color-background, #f1f3f2);
+    padding: 16px 0 40px;
+  }
+
+  .erm-page {
+    border-radius: 6px;
+    box-shadow: 0 12px 40px rgba(20, 35, 28, 0.1);
+    max-width: 100%;
+  }
+
+  .erm-obs-input:focus,
+  .erm-sig .name:focus {
+    background: #f1f5f4;
+    border-radius: 4px;
+  }
+}
+
+/* --- Impresión / PDF --- */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  .erm {
+    background: #fff;
+    display: block;
+    gap: 0;
+    padding: 0;
+  }
+
+  .erm-page {
+    border-radius: 0;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .erm-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .erm-print-toolbar {
+    display: none !important;
+  }
+}
