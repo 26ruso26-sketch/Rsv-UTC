@@ -1,83 +1,62 @@
 import type { Config } from 'tailwindcss';
 
+/**
+ * Sistema visual "Papel y tinta" (docs/dashboard-taste/SKILL.md) con el verde
+ * institucional de la UTC como único acento. Los valores viven como variables
+ * CSS en src/app/globals.css; aquí solo se exponen como utilidades.
+ */
+const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/lib/**/*.{js,ts}',
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'Manrope', 'system-ui', 'sans-serif'],
-      },
       colors: {
-        /* ---------------------------------------------------------------
-           Tokens del dashboard (dashboard_ui_style_guide.md §2 y §14).
-
-           Se declaran en hexadecimal para que Tailwind pueda aplicar
-           modificadores de opacidad (bg-brand/40). Los mismos valores viven
-           como variables CSS en src/app/globals.css para el CSS plano, los
-           estilos en línea y la plantilla imprimible: si cambia uno, debe
-           cambiar el otro.
-           --------------------------------------------------------------- */
-        brand: {
-          DEFAULT: '#08764f',
-          dark: '#064b35',
-          deep: '#114b36',
-          soft: '#ddf1e8',
-          mint: '#62b99a',
-          gold: '#c5a049',
-          'gold-soft': '#f6eed9',
+        paper: token('paper'),
+        surface: token('surface'),
+        sunk: token('sunk'),
+        line: {
+          DEFAULT: token('line'),
+          strong: token('line-strong'),
         },
-        app: '#f1f3f2',
-        surface: {
-          DEFAULT: '#ffffff',
-          muted: '#f5f7f6',
-          sidebar: '#f7f8f7',
+        ink: {
+          DEFAULT: token('ink'),
+          2: token('ink-2'),
+          3: token('ink-3'),
         },
-        ink: '#111715',
-        muted: '#89918d',
-        line: '#e8ece9',
-        state: {
-          success: '#23845d',
-          warning: '#d6a83d',
-          danger: '#d66b68',
-          info: '#6d91c6',
+        accent: {
+          DEFAULT: token('accent'),
+          hover: token('accent-hover'),
+          soft: token('accent-soft'),
         },
-
-        /* Paletas previas conservadas para no romper vistas existentes */
-        utc: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#bae0fd',
-          300: '#7cc8fb',
-          400: '#36aaf5',
-          500: '#0c8ee6',
-          600: '#0070c4',
-          700: '#01599f',
-          800: '#064b83',
-          900: '#0b3f6d',
-          950: '#072849',
-        },
-        institutional: {
-          green: '#114b36',
-          gold: '#c5a049',
-          navy: '#0f172a',
-        },
+        'on-accent': token('on-accent'),
+        ok: { DEFAULT: token('ok'), soft: token('ok-soft') },
+        warn: { DEFAULT: token('warn'), soft: token('warn-soft') },
+        bad: { DEFAULT: token('bad'), soft: token('bad-soft') },
       },
-      borderRadius: {
-        shell: 'var(--radius-shell)',
-        card: 'var(--radius-card)',
-        control: 'var(--radius-control)',
+      fontFamily: {
+        sans: ['var(--font-body)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Helvetica Neue', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+      },
+      fontSize: {
+        xs: ['12.5px', { lineHeight: '1.45' }],
+        label: ['11px', { lineHeight: '1.2', letterSpacing: '0.08em' }],
+        hero: ['56px', { lineHeight: '1', letterSpacing: '-0.02em' }],
       },
       boxShadow: {
-        shell: 'var(--shadow-shell)',
-        card: 'var(--shadow-card)',
-        hover: 'var(--shadow-hover)',
+        float: '0 8px 24px rgb(29 26 22 / 0.12)',
+      },
+      transitionDuration: {
+        DEFAULT: '150ms',
       },
       transitionTimingFunction: {
-        ui: 'ease-out',
+        DEFAULT: 'cubic-bezier(0, 0, 0.2, 1)',
       },
     },
   },

@@ -93,23 +93,23 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
       <button
         type="button"
         onClick={handleToggle}
-        className="relative inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-utc-500"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-line-strong text-ink transition-colors hover:border-ink"
         aria-label="Notificaciones internas"
       >
-        <Bell className="h-5 w-5" />
+        <Bell strokeWidth={1.5} className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold text-white shadow">
+          <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-bad px-1 font-mono text-[10px] font-semibold text-surface">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 sm:w-96 rounded-2xl border border-slate-200 bg-white shadow-2xl">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+        <div className="absolute right-0 z-50 mt-2 w-80 sm:w-96 overflow-hidden rounded-xl border border-line bg-surface shadow-float">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Notificaciones Internas</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-sm font-semibold text-ink">Notificaciones Internas</h3>
+              <p className="font-mono text-[11px] text-ink-3">
                 {unreadCount > 0
                   ? `${unreadCount} sin leer`
                   : 'Todas las notificaciones leídas'}
@@ -119,21 +119,19 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
               <button
                 type="button"
                 onClick={markAllRead}
-                className="inline-flex items-center gap-1 rounded-lg bg-utc-50 px-2.5 py-1 text-xs font-semibold text-utc-700 hover:bg-utc-100"
+                className="inline-flex items-center gap-1 text-xs font-medium text-ink underline-offset-4 hover:underline"
               >
-                <CheckCheck className="h-3.5 w-3.5" />
+                <CheckCheck strokeWidth={1.5} className="h-3.5 w-3.5" />
                 Marcar leídas
               </button>
             )}
           </div>
 
-          <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+          <div className="max-h-96 overflow-y-auto divide-y divide-line">
             {loading && notifications.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-500">
-                Cargando notificaciones...
-              </div>
+              <div className="px-4 py-6 text-xs text-ink-3">Cargando notificaciones...</div>
             ) : notifications.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-500">
+              <div className="px-4 py-6 text-xs text-ink-2">
                 No tienes notificaciones registradas.
               </div>
             ) : (
@@ -142,22 +140,26 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
                   key={n.id}
                   type="button"
                   onClick={() => handleSelectNotification(n)}
-                  className={`w-full text-left px-4 py-3 transition hover:bg-slate-50 flex items-start gap-3 ${
-                    !n.isRead ? 'bg-utc-50/60' : 'bg-white'
-                  }`}
+                  className="w-full text-left px-4 py-3 transition-colors hover:bg-sunk/60 flex items-start gap-3"
                 >
                   <span
-                    className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
-                      !n.isRead ? 'bg-utc-600' : 'bg-slate-300'
+                    className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                      !n.isRead ? 'bg-accent' : 'bg-line-strong'
                     }`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-slate-900 truncate">{n.title}</p>
-                      <ExternalLink className="h-3 w-3 shrink-0 text-slate-400" />
+                      <p
+                        className={`text-xs truncate ${
+                          !n.isRead ? 'font-semibold text-ink' : 'font-medium text-ink-2'
+                        }`}
+                      >
+                        {n.title}
+                      </p>
+                      <ExternalLink strokeWidth={1.5} className="h-3 w-3 shrink-0 text-ink-3" />
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">{n.message}</p>
-                    <p className="mt-1 text-[11px] text-slate-400">
+                    <p className="mt-0.5 text-xs text-ink-2 line-clamp-2">{n.message}</p>
+                    <p className="mt-1 font-mono text-[11px] text-ink-3">
                       {formatDateTimeMonterrey(n.createdAt)}
                     </p>
                   </div>
@@ -170,4 +172,3 @@ export function NotificationBell({ initialUnread = 0 }: { initialUnread?: number
     </div>
   );
 }
-

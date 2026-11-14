@@ -1,5 +1,27 @@
 import type { Metadata } from 'next';
+import { Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const body = Hanken_Grotesk({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'SREU | Sistema de Reservación de Espacios Universitarios',
@@ -13,9 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body className="min-h-screen bg-app text-ink">{children}</body>
+    <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+      <body className="min-h-screen bg-paper text-ink">{children}</body>
     </html>
   );
 }
-

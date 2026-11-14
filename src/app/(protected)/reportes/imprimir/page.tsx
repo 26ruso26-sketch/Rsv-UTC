@@ -197,7 +197,7 @@ function PrintableReport() {
 
   if (loading) {
     return (
-      <div className="erm-print-toolbar p-10 text-center text-xs text-muted">
+      <div className="erm-print-toolbar p-10 text-center text-xs text-slate-500">
         Generando el reporte con el formato institucional…
       </div>
     );
@@ -205,26 +205,26 @@ function PrintableReport() {
 
   if (error || !data) {
     return (
-      <div className="erm-print-toolbar mx-auto mt-6 max-w-lg space-y-4 rounded-card border border-[#f0d4d3] bg-[#F9E8E7] p-6">
+      <div className="erm-print-toolbar mx-auto mt-6 max-w-lg space-y-4 rounded-2xl border border-rose-200 bg-rose-50 p-6">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#B85D59]" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
           <div>
-            <h2 className="text-sm font-semibold text-[#8f4340]">
+            <h2 className="text-sm font-bold text-rose-900">
               No se pudo generar el reporte imprimible
             </h2>
-            <p className="mt-1 text-xs text-[#B85D59]">{error}</p>
+            <p className="mt-1 text-xs text-rose-800">{error}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="ui-btn-deep"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Reintentar
           </button>
-          <Link href="/reportes" className="ui-btn-secondary">
+          <Link href="/reportes" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm">
             <ArrowLeft className="h-3.5 w-3.5" />
             Volver a reportes
           </Link>
@@ -267,21 +267,21 @@ function PrintableReport() {
   return (
     <>
       {/* Barra de acciones (no se imprime) */}
-      <div className="erm-print-toolbar mb-3 flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface p-3.5">
+      <div className="erm-print-toolbar mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-ink">
+          <p className="text-[13px] font-bold text-slate-900">
             Vista previa del reporte institucional
           </p>
-          <p className="ui-caption mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             Folio {folio} · {totalPages} hoja(s) A4 · Imprime o guarda como PDF (Ctrl/Cmd + P).
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Link href="/reportes" className="ui-btn-secondary">
+          <Link href="/reportes" className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-sm">
             <ArrowLeft className="h-3.5 w-3.5" />
             Volver
           </Link>
-          <button type="button" onClick={() => window.print()} className="ui-btn-primary">
+          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-sm">
             <Printer className="h-3.5 w-3.5" />
             Imprimir / Guardar PDF
           </button>
@@ -692,7 +692,7 @@ export default function ReportePrintPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-10 text-center text-xs text-muted">Preparando la plantilla…</div>
+        <div className="p-10 text-center text-xs text-slate-500">Preparando la plantilla…</div>
       }
     >
       <PrintableReport />

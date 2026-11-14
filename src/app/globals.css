@@ -1,216 +1,114 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===========================================================================
-   SREU · UTC — Tokens globales de interfaz (dashboard_ui_style_guide.md §14)
-   El verde profundo y el oro provienen de la plantilla institucional oficial
-   (Plantilla_Reporte_Metricas_ERM_UTC): verde #114B36 / oro #C5A049.
-   =========================================================================== */
+/*
+ * SREU — sistema visual "Papel y tinta"
+ * Referencia: docs/dashboard-taste/SKILL.md
+ * Un solo acento (verde institucional UTC). Para cambiarlo basta editar
+ * --accent, --accent-hover y --accent-soft.
+ * Los colores van como canales RGB para que Tailwind pueda aplicar opacidad.
+ */
 :root {
-  /* Colores de marca */
-  --color-primary: #08764f;
-  --color-primary-dark: #064b35;
-  --color-primary-deep: #114b36;
-  --color-primary-soft: #ddf1e8;
-  --color-mint: #62b99a;
-  --color-gold: #c5a049;
-  --color-gold-soft: #f6eed9;
+  /* Superficie */
+  --paper: 243 238 228; /* #F3EEE4 fondo de la app */
+  --surface: 251 248 242; /* #FBF8F2 tarjetas */
+  --sunk: 234 227 213; /* #EAE3D5 pistas, hover, celdas */
+  --line: 220 211 194; /* #DCD3C2 bordes 1px */
+  --line-strong: 189 178 157; /* #BDB29D */
 
-  /* Superficies */
-  --color-background: #f1f3f2;
-  --color-surface: #ffffff;
-  --color-sidebar: #f7f8f7;
-  --color-surface-muted: #f5f7f6;
+  /* Tinta */
+  --ink: 29 26 22; /* #1D1A16 */
+  --ink-2: 94 87 76; /* #5E574C */
+  --ink-3: 115 107 93; /* #736B5D rótulos (4.9:1 sobre surface) */
 
-  /* Texto y bordes */
-  --color-text: #111715;
-  --color-text-muted: #89918d;
-  --color-border: #e8ece9;
+  /* Acento único: verde UTC */
+  --accent: 14 104 66; /* #0E6842 */
+  --accent-hover: 10 82 52; /* #0A5234 */
+  --accent-soft: 219 232 222; /* #DBE8DE */
+  --on-accent: 255 249 243; /* #FFF9F3 */
 
-  /* Semánticos */
-  --color-success: #23845d;
-  --color-warning: #d6a83d;
-  --color-danger: #d66b68;
-  --color-info: #6d91c6;
-
-  /* Tipografía */
-  --font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-
-  /* Radios */
-  --radius-shell: 24px;
-  --radius-card: 16px;
-  --radius-control: 20px;
-
-  /* Sombras */
-  --shadow-shell: 0 12px 40px rgba(20, 35, 28, 0.05);
-  --shadow-card: 0 2px 12px rgba(20, 35, 28, 0.025);
-  --shadow-hover: 0 6px 18px rgba(20, 35, 28, 0.06);
-
-  /* Movimiento */
-  --transition-ui: 180ms ease-out;
+  /* Estados: solo significado */
+  --ok: 38 99 70; /* #266346 */
+  --ok-soft: 220 233 223; /* #DCE9DF */
+  --warn: 138 89 0; /* #8A5900 */
+  --warn-soft: 243 230 196; /* #F3E6C4 */
+  --bad: 163 42 42; /* #A32A2A */
+  --bad-soft: 242 217 213; /* #F2D9D5 */
 }
 
 @layer base {
   html {
-    font-family: var(--font-family);
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-app text-ink antialiased;
-    font-family: var(--font-family);
+    @apply bg-paper font-sans text-ink antialiased;
+    font-size: 14px;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Foco visible y consistente (guía §12) */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), 'Helvetica Neue', sans-serif;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  /* Foco visible y uniforme: borde de tinta, sin anillos de color */
   :focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid rgb(var(--ink));
     outline-offset: 2px;
-    border-radius: 6px;
   }
 
-  /* Respetar prefers-reduced-motion (guía §13) */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: none;
+  }
+
+  ::selection {
+    background: rgb(var(--accent-soft));
+    color: rgb(var(--ink));
+  }
+
+  /* Encabezados de tabla: rótulo mono */
+  th {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-weight: 500;
+    letter-spacing: 0.08em;
   }
 }
 
 @layer components {
-  /* --- Sistema de tarjetas (guía §5) --- */
-  .ui-card {
-    @apply rounded-card border border-line bg-surface shadow-card;
+  /* Rótulo mono en mayúsculas (nombre de dato, encabezado de sección) */
+  .label-mono {
+    @apply font-mono text-label font-medium uppercase text-ink-3;
   }
 
-  .ui-card-interactive {
-    @apply ui-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-hover;
+  /* Tarjeta base: mismo marco en toda la app */
+  .card {
+    @apply rounded-xl border border-line bg-surface;
   }
 
-  /* Tarjeta destacada: verde profundo institucional */
-  .ui-card-feature {
-    @apply rounded-card border border-brand-deep/40 bg-brand-deep text-white shadow-card;
-  }
-
-  .ui-card-title {
-    @apply text-[15px] font-semibold text-ink;
-  }
-
-  .ui-label {
-    @apply text-[10px] font-semibold uppercase tracking-[0.06em] text-muted;
-  }
-
-  .ui-metric {
-    @apply text-[30px] font-semibold leading-none tracking-tight text-ink;
-  }
-
-  .ui-caption {
-    @apply text-[11px] text-muted;
-  }
-
-  /* --- Controles (guía §7.3) --- */
-  .ui-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 text-xs font-semibold transition-colors duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50;
-    min-height: 38px;
-  }
-
-  .ui-btn-primary {
-    @apply ui-btn bg-brand text-white hover:bg-brand-dark;
-  }
-
-  .ui-btn-deep {
-    @apply ui-btn bg-brand-deep text-white hover:bg-brand-dark;
-  }
-
-  .ui-btn-secondary {
-    @apply ui-btn border border-line bg-surface text-ink hover:bg-surface-muted;
-  }
-
-  .ui-btn-ghost {
-    @apply ui-btn bg-surface-muted text-ink hover:bg-brand-soft;
-  }
-
-  .ui-icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors duration-200 ease-out hover:bg-surface-muted;
-  }
-
-  /* --- Campos (guía §7.2) --- */
-  .ui-field {
-    @apply w-full rounded-xl border border-line bg-surface-muted px-3.5 py-2 text-xs text-ink placeholder:text-muted focus:border-brand focus:bg-surface focus:outline-none;
-    min-height: 38px;
-  }
-
-  .ui-field-label {
-    @apply mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.06em] text-muted;
-  }
-
-  /* --- Chips de estado (guía §7.7) --- */
-  .ui-chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
-  }
-
-  .ui-chip-done {
-    @apply ui-chip bg-[#E4F3EA] text-[#287B55];
-  }
-
-  .ui-chip-progress {
-    @apply ui-chip bg-[#FBF2D9] text-[#A47B1E];
-  }
-
-  .ui-chip-pending {
-    @apply ui-chip bg-[#F9E8E7] text-[#B85D59];
-  }
-
-  .ui-chip-info {
-    @apply ui-chip bg-[#E9EFF8] text-[#5E7EAE];
-  }
-
-  /* --- Tablas compactas --- */
-  .ui-table {
-    @apply w-full border-collapse text-left text-xs;
-  }
-
-  .ui-table thead tr {
-    @apply border-b border-line bg-surface-muted;
-  }
-
-  .ui-table th {
-    @apply px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-muted;
-  }
-
-  .ui-table tbody tr {
-    @apply border-b border-line/70 transition-colors last:border-0 hover:bg-surface-muted/70;
-  }
-
-  .ui-table td {
-    @apply px-4 py-2.5 text-ink;
+  /* Rayado diagonal para pendiente / proyectado / sin datos */
+  .hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(var(--ink-3) / 0.55) 0 1.5px,
+      transparent 1.5px 7px
+    );
   }
 }
 
-/* --- Barra de desplazamiento discreta --- */
-@layer utilities {
-  .scrollbar-slim {
-    scrollbar-width: thin;
-    scrollbar-color: #d6ded9 transparent;
-  }
-
-  .scrollbar-slim::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .scrollbar-slim::-webkit-scrollbar-thumb {
-    background: #d6ded9;
-    border-radius: 999px;
-  }
-
-  .scrollbar-slim::-webkit-scrollbar-track {
-    background: transparent;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

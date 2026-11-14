@@ -3,21 +3,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar,
-  Clock,
-  CheckCircle2,
   AlertTriangle,
   PlusCircle,
   ArrowRight,
-  ArrowUpRight,
-  MapPin,
-  Users,
   QrCode,
   FileWarning,
-  ShieldCheck,
   RefreshCw,
-  Activity,
-  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AppShell';
 import {
@@ -107,159 +98,6 @@ interface DashboardData {
   }[];
 }
 
-/* ------------------------------------------------------------------ */
-/* Componentes visuales locales (guía §5 y §7)                         */
-/* ------------------------------------------------------------------ */
-
-function MetricCard({
-  label,
-  value,
-  caption,
-  href,
-  tone = 'plain',
-}: {
-  label: string;
-  value: React.ReactNode;
-  caption: React.ReactNode;
-  href?: string;
-  tone?: 'plain' | 'feature';
-}) {
-  const feature = tone === 'feature';
-
-  const body = (
-    <>
-      <div className="flex items-start justify-between gap-2">
-        <p
-          className={`text-[10px] font-semibold uppercase tracking-[0.06em] ${
-            feature ? 'text-brand-gold' : 'text-muted'
-          }`}
-        >
-          {label}
-        </p>
-        {href && (
-          <span
-            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors ${
-              feature
-                ? 'bg-white/10 text-white group-hover:bg-white/20'
-                : 'bg-surface-muted text-muted group-hover:bg-brand-soft group-hover:text-brand-deep'
-            }`}
-          >
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </span>
-        )}
-      </div>
-      <p
-        className={`mt-3 text-[32px] font-semibold leading-none tracking-tight ${
-          feature ? 'text-white' : 'text-ink'
-        }`}
-      >
-        {value}
-      </p>
-      <p className={`mt-2 text-[11px] ${feature ? 'text-white/70' : 'text-muted'}`}>{caption}</p>
-    </>
-  );
-
-  const className = `group flex flex-col p-[15px] ${
-    feature ? 'ui-card-feature' : 'ui-card-interactive'
-  }`;
-
-  return href ? (
-    <Link href={href} className={className}>
-      {body}
-    </Link>
-  ) : (
-    <div className={className}>{body}</div>
-  );
-}
-
-function BarRow({
-  label,
-  value,
-  total,
-  color,
-  hint,
-}: {
-  label: string;
-  value: number;
-  total: number;
-  color: string;
-  hint?: string;
-}) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="truncate text-[12px] font-medium text-ink">{label}</span>
-        <span className="shrink-0 text-[11px] text-muted">
-          <span className="font-semibold text-ink">{value}</span>
-          {hint ? ` · ${hint}` : ` · ${pct}%`}
-        </span>
-      </div>
-      <div
-        className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted"
-        role="img"
-        aria-label={`${label}: ${value} de ${total} (${pct}%)`}
-      >
-        <div
-          className="h-full rounded-full transition-[width] duration-500 ease-out"
-          style={{ width: `${Math.min(100, pct)}%`, background: color }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function Donut({ pct, caption }: { pct: number; caption: string }) {
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const safePct = Math.max(0, Math.min(100, pct));
-  const dash = (safePct / 100) * circumference;
-
-  return (
-    <div className="relative mx-auto h-[132px] w-[132px] shrink-0">
-      <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="var(--color-surface-muted)"
-          strokeWidth="11"
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="var(--color-primary)"
-          strokeWidth="11"
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${circumference - dash}`}
-          className="transition-[stroke-dasharray] duration-700 ease-out"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[26px] font-semibold leading-none tracking-tight text-ink">
-          {safePct}%
-        </span>
-        <span className="mt-1 max-w-[92px] text-center text-[9px] font-medium uppercase tracking-[0.06em] text-muted">
-          {caption}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-const ATTENDEE_CATEGORIES = [
-  { key: 'STUDENT', label: 'Alumnos', color: 'var(--color-primary-deep)' },
-  { key: 'TEACHER', label: 'Docentes', color: 'var(--color-primary)' },
-  { key: 'ADMIN_STAFF', label: 'Personal administrativo', color: 'var(--color-mint)' },
-  { key: 'EXTERNAL_GUEST', label: 'Invitados externos', color: 'var(--color-gold)' },
-];
-
-/* ------------------------------------------------------------------ */
-
 export default function DashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -312,9 +150,7 @@ export default function DashboardPage() {
       }
 
       if (!parsed || typeof parsed !== 'object' || !('stats' in parsed)) {
-        throw new Error(
-          'La respuesta del dashboard no contiene la estructura de indicadores esperada.'
-        );
+        throw new Error('La respuesta del dashboard no contiene la estructura de indicadores esperada.');
       }
 
       setData(parsed as DashboardData);
@@ -336,41 +172,32 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-5">
-        <div className="h-16 animate-pulse rounded-card bg-surface-muted" />
-        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-[118px] animate-pulse rounded-card bg-surface-muted" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
-          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-5" />
-          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-4" />
-          <div className="h-64 animate-pulse rounded-card bg-surface-muted lg:col-span-3" />
-        </div>
-        <p className="text-center text-xs text-muted">
-          Cargando indicadores ejecutivos y métricas de asistencia…
-        </p>
+      <div className="py-8 text-sm text-ink-3">
+        Cargando indicadores ejecutivos y métricas de asistencia...
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto mt-6 max-w-xl space-y-4 rounded-card border border-[#f0d4d3] bg-[#F9E8E7] p-6">
+      <div className="max-w-xl mt-8 card p-6 space-y-4">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#B85D59]" />
+          <AlertTriangle strokeWidth={1.5} className="w-5 h-5 text-bad shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <h2 className="text-sm font-semibold text-[#8f4340]">
+            <h2 className="text-base font-semibold text-ink">
               No se pudieron cargar los indicadores del dashboard
             </h2>
-            <p className="text-xs text-[#B85D59]">
+            <p className="text-xs text-bad">
               {error || 'No se recibieron datos válidos desde el servidor.'}
             </p>
           </div>
         </div>
-        <button type="button" onClick={() => void loadDashboard()} className="ui-btn-deep">
-          <RefreshCw className="h-3.5 w-3.5" />
+        <button
+          type="button"
+          onClick={() => void loadDashboard()}
+          className="inline-flex h-9 items-center gap-2 px-4 rounded-full bg-ink hover:bg-ink-2 text-surface text-xs font-medium transition-colors"
+        >
+          <RefreshCw strokeWidth={1.5} className="w-3.5 h-3.5" />
           Reintentar
         </button>
       </div>
@@ -378,410 +205,362 @@ export default function DashboardPage() {
   }
 
   const { stats } = data;
-  const lc = stats.lifecycleCounts;
-  const att = stats.attendanceSummary;
-  const lifecycleTotal = Math.max(1, stats.totalEvents);
+  const attendance = stats.attendanceSummary;
 
-  const lifecycleSeries = [
-    {
-      label: 'Pendientes de autorización',
-      value: lc.PENDING_APPROVAL,
-      color: 'var(--color-warning)',
-    },
-    { label: 'Programados', value: lc.SCHEDULED, color: 'var(--color-primary)' },
-    { label: 'En curso', value: lc.IN_PROGRESS, color: 'var(--color-mint)' },
-    {
-      label: 'Pendientes de evidencia',
-      value: lc.COMPLETED_PENDING_EVIDENCE,
-      color: 'var(--color-gold)',
-    },
-    { label: 'Cerrados con PDF', value: lc.CLOSED, color: 'var(--color-primary-deep)' },
-    { label: 'Rechazados', value: lc.REJECTED, color: 'var(--color-danger)' },
-    { label: 'Vencidos', value: lc.EXPIRED, color: '#b9c2bd' },
-  ];
-
-  const hasPendingInbox =
-    data.pendingSpaceRequests.length > 0 ||
-    data.pendingEquipmentRequests.length > 0 ||
-    data.pendingScheduleChanges.length > 0;
+  const kpiCard = 'card p-5 flex flex-col justify-between gap-3 min-w-0';
+  const kpiNumber = 'font-display text-4xl font-semibold leading-none tracking-tight';
+  const kpiNote = 'font-mono text-[11px] text-ink-3';
 
   return (
-    <div className="space-y-5">
-      {/* ===================== Encabezado de contenido (guía §4) ===================== */}
-      <div className="flex flex-col justify-between gap-3.5 md:flex-row md:items-end">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-[28px]">
-            Bienvenido, {user?.fullName?.split(' ')[0] || 'usuario'}
-          </h1>
-          <p className="mt-1 max-w-2xl text-[13px] text-muted">
+    <div className="space-y-8">
+      {/* Encabezado de página */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+        <div className="max-w-3xl">
+          <p className="label-mono mb-2">Panel Institucional · SREU Fase 2</p>
+          <h1 className="text-[28px] font-semibold text-ink">Bienvenido, {user?.fullName}</h1>
+          <p className="text-sm text-ink-2 mt-2">
             {user?.buildingName
-              ? `Responsable de ${user.buildingName} · ciclo de vida de eventos, cierre documental y asistencia QR.`
+              ? `Responsable de ${user.buildingName} — Control de ciclo de vida de eventos, cierre documental PDF y asistencia QR.`
               : `${
-                  user?.departmentLabel || 'Coordinación institucional'
-                } · supervisión global de recintos, autorizaciones y control de acceso QR.`}
+                  user?.departmentLabel || 'Coordinación Institucional'
+                } — Supervisión global de recintos, autorizaciones y control de acceso QR.`}
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <Link href="/escaner" className="ui-btn-secondary">
-            <QrCode className="h-3.5 w-3.5 text-brand" />
-            Escáner QR
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Link
+            href="/escaner"
+            className="inline-flex h-10 items-center gap-2 px-4 rounded-full border border-line-strong text-ink hover:border-ink font-medium text-xs transition-colors"
+          >
+            <QrCode strokeWidth={1.5} className="w-4 h-4" />
+            Escáner QR de Acceso
           </Link>
-          <Link href="/eventos/nuevo" className="ui-btn-primary">
-            <PlusCircle className="h-3.5 w-3.5" />
-            Registrar evento
+          <Link
+            href="/eventos/nuevo"
+            className="inline-flex h-10 items-center gap-2 px-4 rounded-full bg-ink hover:bg-ink-2 text-surface font-medium text-xs transition-colors"
+          >
+            <PlusCircle strokeWidth={1.5} className="w-4 h-4" />
+            Registrar Evento
           </Link>
         </div>
       </div>
 
-      {/* ===================== Aviso de cierre documental pendiente ===================== */}
+      {/* Aviso de cierre documental pendiente */}
       {stats.pendingEvidenceClosureCount > 0 && (
-        <div className="flex flex-col justify-between gap-3 rounded-card border border-brand-gold/35 bg-brand-gold-soft p-4 sm:flex-row sm:items-center">
+        <div className="rounded-xl border border-warn/30 bg-warn-soft p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <FileWarning className="mt-0.5 h-4 w-4 shrink-0 text-[#A47B1E]" />
-            <div className="text-[12px] text-[#7a5c16]">
-              <p className="font-semibold text-[#6b4f12]">
-                {stats.pendingEvidenceClosureCount} evento(s) concluido(s) sin evidencia documental
-                de cierre
+            <FileWarning strokeWidth={1.5} className="w-5 h-5 text-warn shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <p className="font-semibold text-sm text-ink">
+                Atención: {stats.pendingEvidenceClosureCount} evento(s) concluido(s) pendiente(s) de
+                evidencia documental de cierre
               </p>
-              <p className="mt-0.5">
-                Los eventos cuya hora de finalización ya concluyó requieren al menos un PDF de
-                evidencia para pasar a estado Cerrado.
+              <p className="text-ink-2 mt-0.5">
+                Los eventos cuya hora de finalización ya concluyó requieren al menos un archivo PDF
+                de evidencia de realización para pasar a estado Cerrado (`CLOSED`).
               </p>
             </div>
           </div>
           <Link
             href="/eventos?lifecycle=COMPLETED_PENDING_EVIDENCE"
-            className="ui-btn shrink-0 bg-[#A47B1E] text-white hover:bg-[#8a681a]"
+            className="inline-flex h-9 items-center px-4 rounded-full bg-ink hover:bg-ink-2 text-surface text-xs font-medium shrink-0 transition-colors"
           >
-            Ver pendientes
+            Ver Eventos Pendientes de Evidencia
           </Link>
         </div>
       )}
 
-      {/* ===================== Fila 1 · Tarjetas de métricas (guía §7.4) ===================== */}
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        <MetricCard
-          tone="feature"
-          label="Total de eventos"
-          value={stats.totalEvents}
-          href="/eventos"
-          caption={
-            <>
-              Abiertos: {att.openEventsCount} · Restringidos: {att.restrictedEventsCount}
-            </>
-          }
-        />
-        <MetricCard
-          label="Programados"
-          value={lc.SCHEDULED}
-          href="/eventos?lifecycle=SCHEDULED"
-          caption={<>En curso ahora: {lc.IN_PROGRESS} · Hoy: {stats.todayEventsCount}</>}
-        />
-        <MetricCard
-          label="Pend. evidencia PDF"
-          value={lc.COMPLETED_PENDING_EVIDENCE}
-          href="/eventos?lifecycle=COMPLETED_PENDING_EVIDENCE"
-          caption="Concluidos sin cierre documental"
-        />
-        <MetricCard
-          label="Cerrados con PDF"
-          value={lc.CLOSED}
-          href="/reportes"
-          caption={<>Rechazados/vencidos: {lc.REJECTED + lc.EXPIRED}</>}
-        />
-      </div>
+      {/* Ciclo de vida: una tarjeta protagonista y cinco neutras */}
+      <section>
+        <h2 className="label-mono mb-3">
+          Ciclo de Vida de Eventos y Bandeja de Autorizaciones
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-4 rounded-xl border border-accent bg-accent text-on-accent p-6 flex flex-col justify-between gap-8 min-h-[220px]">
+            <p className="font-mono text-label font-medium uppercase opacity-75">Total Eventos</p>
+            <div>
+              <p className="font-display text-hero font-semibold">{stats.totalEvents}</p>
+              <p className="font-mono text-[11px] opacity-80 mt-3">
+                Abiertos: {attendance.openEventsCount} · Restr.: {attendance.restrictedEventsCount}
+              </p>
+            </div>
+          </div>
 
-      {/* ===================== Fila 2 · Ciclo de vida, asistencia y recordatorios ===================== */}
-      <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
-        {/* Gráfico de ciclo de vida */}
-        <section className="ui-card p-[17px] lg:col-span-5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-brand" />
+          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-6 gap-4">
+            <div className={`${kpiCard} sm:col-span-3`}>
+              <p className="label-mono">Programados</p>
               <div>
-                <h2 className="ui-card-title">Ciclo de vida de eventos</h2>
-                <p className="ui-caption mt-0.5">Distribución sobre {stats.totalEvents} evento(s)</p>
+                <p className={`${kpiNumber} text-ink`}>{stats.lifecycleCounts.SCHEDULED}</p>
+                <p className={`${kpiNote} mt-2`}>
+                  En curso hoy: {stats.lifecycleCounts.IN_PROGRESS}
+                </p>
               </div>
             </div>
-            <Link
-              href="/reportes"
-              className="shrink-0 text-[11px] font-semibold text-brand hover:text-brand-dark"
-            >
-              Reportes
-            </Link>
-          </div>
 
-          <div className="mt-4 space-y-3">
-            {lifecycleSeries.map((item) => (
-              <BarRow
-                key={item.label}
-                label={item.label}
-                value={item.value}
-                total={lifecycleTotal}
-                color={item.color}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Asistencia y control QR */}
-        <section className="ui-card p-[17px] lg:col-span-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <QrCode className="h-4 w-4 text-brand" />
+            <div className={`${kpiCard} sm:col-span-3`}>
+              <p className="label-mono">Por Autorizar (Míos)</p>
               <div>
-                <h2 className="ui-card-title">Asistencia y acceso QR</h2>
-                <p className="ui-caption mt-0.5">Participación consolidada</p>
+                <p
+                  className={`${kpiNumber} ${
+                    stats.pendingAuthorizationsForMe > 0 ? 'text-warn' : 'text-ink'
+                  }`}
+                >
+                  {stats.pendingAuthorizationsForMe}
+                </p>
+                <p className={`${kpiNote} mt-2`}>
+                  Esp: {stats.pendingSpaceForMe} · Eq: {stats.pendingEquipmentForMe} · Hor:{' '}
+                  {stats.pendingScheduleForMe}
+                </p>
+              </div>
+            </div>
+
+            <div className={`${kpiCard} sm:col-span-2`}>
+              <p className="label-mono">Pend. Evidencia PDF</p>
+              <div>
+                <p
+                  className={`${kpiNumber} ${
+                    stats.lifecycleCounts.COMPLETED_PENDING_EVIDENCE > 0 ? 'text-warn' : 'text-ink'
+                  }`}
+                >
+                  {stats.lifecycleCounts.COMPLETED_PENDING_EVIDENCE}
+                </p>
+                <p className={`${kpiNote} mt-2`}>Concluidos sin cierre</p>
+              </div>
+            </div>
+
+            <div className={`${kpiCard} sm:col-span-2`}>
+              <p className="label-mono">Cerrados (CLOSED)</p>
+              <div>
+                <p className={`${kpiNumber} text-ink`}>{stats.lifecycleCounts.CLOSED}</p>
+                <p className={`${kpiNote} mt-2`}>Con PDF de realización</p>
+              </div>
+            </div>
+
+            <div className={`${kpiCard} col-span-2 sm:col-span-2`}>
+              <p className="label-mono">Rechazados / Vencidos</p>
+              <div>
+                <p className={`${kpiNumber} text-ink`}>
+                  {stats.lifecycleCounts.REJECTED + stats.lifecycleCounts.EXPIRED}
+                </p>
+                <p className={`${kpiNote} mt-2`}>
+                  Rech: {stats.lifecycleCounts.REJECTED} · Venc: {stats.lifecycleCounts.EXPIRED}
+                </p>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <Donut pct={att.globalAttendancePct} caption="Asistencia efectiva" />
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-xl bg-surface-muted p-2.5">
-              <p className="ui-label">Registrados</p>
-              <p className="mt-1 text-[18px] font-semibold leading-none text-ink">
-                {att.totalRegisteredActive}
-              </p>
-              <p className="ui-caption mt-1">Revocados: {att.totalRevoked}</p>
-            </div>
-            <div className="rounded-xl bg-brand-soft/70 p-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-brand-deep">
-                Entradas
-              </p>
-              <p className="mt-1 text-[18px] font-semibold leading-none text-brand-deep">
-                {att.totalCheckedIn}
-              </p>
-              <p className="mt-1 text-[11px] text-brand-deep/70">
-                Sin ingreso: {att.totalPendingCheckIn}
-              </p>
-            </div>
+      {/* Asistencia y control de acceso QR */}
+      <section className="card">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 px-6 pt-5 pb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">
+              Métricas Globales de Registro de Asistentes y Control de Acceso QR
+            </h2>
+            <p className="text-xs text-ink-3 mt-1">
+              Participación consolidada en tiempo real desde SQLite
+            </p>
           </div>
-
-          <div className="mt-3 space-y-2.5 border-t border-line pt-3">
-            {ATTENDEE_CATEGORIES.map((cat) => {
-              const bucket = att.byAttendeeType[cat.key] || { registered: 0, checkedIn: 0 };
-              return (
-                <BarRow
-                  key={cat.key}
-                  label={cat.label}
-                  value={bucket.checkedIn}
-                  total={Math.max(1, bucket.registered)}
-                  color={cat.color}
-                  hint={`de ${bucket.registered}`}
-                />
-              );
-            })}
-          </div>
-
-          <p className="ui-caption mt-3">
-            Ocupación promedio de recintos: {att.globalOccupancyPct}% en{' '}
-            {att.eventsWithAttendanceCount} evento(s) con padrón QR.
-          </p>
-        </section>
-
-        {/* Recordatorios */}
-        <section className="ui-card flex flex-col p-[17px] lg:col-span-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-brand-gold" />
-            <h2 className="ui-card-title">Recordatorios</h2>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            <Link
-              href="/autorizaciones"
-              className="block rounded-xl border border-line bg-surface-muted p-3 transition-colors hover:bg-brand-soft/50"
-            >
-              <p className="ui-label">Por autorizar (míos)</p>
-              <p className="mt-1 text-[24px] font-semibold leading-none text-ink">
-                {stats.pendingAuthorizationsForMe}
-              </p>
-              <p className="ui-caption mt-1.5">
-                Espacio {stats.pendingSpaceForMe} · Equipo {stats.pendingEquipmentForMe} · Horario{' '}
-                {stats.pendingScheduleForMe}
-              </p>
-            </Link>
-
-            <div className="rounded-xl border border-line p-3">
-              <p className="ui-label">Eventos de hoy</p>
-              <p className="mt-1 text-[24px] font-semibold leading-none text-ink">
-                {stats.todayEventsCount}
-              </p>
-              <p className="ui-caption mt-1.5">En curso: {lc.IN_PROGRESS}</p>
-            </div>
-          </div>
-
-          {att.topCareers.length > 0 && (
-            <div className="mt-3 border-t border-line pt-3">
-              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-muted">
-                <GraduationCap className="h-3.5 w-3.5 text-brand" />
-                Carreras con más entradas
-              </p>
-              <ul className="mt-2.5 space-y-1.5">
-                {att.topCareers.slice(0, 4).map((career) => (
-                  <li key={career.name} className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[11px] text-ink">{career.name}</span>
-                    <span className="shrink-0 text-[11px] font-semibold text-brand-deep">
-                      {career.checkedIn}/{career.registered}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           <Link
             href="/reportes"
-            className="ui-btn-ghost mt-auto w-full justify-between pt-2 text-[11px]"
+            className="text-xs font-medium text-ink underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0"
           >
-            Desglose completo
-            <ArrowRight className="h-3.5 w-3.5" />
+            Ver desglose por carrera y grado en Reportes{' '}
+            <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
           </Link>
-        </section>
-      </div>
+        </div>
 
-      {/* ===================== Fila 3 · Eventos y bandeja ===================== */}
-      <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12">
-        {/* Eventos programados */}
-        <section className="ui-card overflow-hidden lg:col-span-8">
-          <div className="flex items-center justify-between gap-3 border-b border-line px-[17px] py-3.5">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-brand" />
-              <h2 className="ui-card-title">Eventos programados y recientes</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-line">
+          <div className="p-6 border-b lg:border-b-0 border-r border-line">
+            <p className="label-mono">Asistentes Registrados / Invitados</p>
+            <p className={`${kpiNumber} text-ink mt-4`}>{attendance.totalRegisteredActive}</p>
+            <p className={`${kpiNote} mt-2`}>Revocados: {attendance.totalRevoked}</p>
+          </div>
+
+          <div className="p-6 border-b lg:border-b-0 lg:border-r border-line">
+            <p className="label-mono">Entradas Validadas (Check-in)</p>
+            <p className={`${kpiNumber} text-ink mt-4`}>{attendance.totalCheckedIn}</p>
+            <p className={`${kpiNote} mt-2`}>
+              Pendientes de ingreso: {attendance.totalPendingCheckIn}
+            </p>
+          </div>
+
+          <div className="p-6 border-r border-line">
+            <p className="label-mono">Porcentaje de Asistencia Efectiva</p>
+            <p className={`${kpiNumber} text-ink mt-4`}>{attendance.globalAttendancePct}%</p>
+            <div className="mt-3 h-[3px] bg-sunk">
+              <div
+                className="h-full bg-accent"
+                style={{ width: `${Math.min(100, Math.max(0, attendance.globalAttendancePct))}%` }}
+              />
             </div>
+            <p className={`${kpiNote} mt-2`}>(Entradas / Registrados activos) × 100</p>
+          </div>
+
+          <div className="p-6">
+            <p className="label-mono">Ocupación Promedio de Recintos</p>
+            <p className={`${kpiNumber} text-ink mt-4`}>{attendance.globalOccupancyPct}%</p>
+            <div className="mt-3 h-[3px] bg-sunk">
+              <div
+                className="h-full bg-ink"
+                style={{ width: `${Math.min(100, Math.max(0, attendance.globalOccupancyPct))}%` }}
+              />
+            </div>
+            <p className={`${kpiNote} mt-2`}>
+              En {attendance.eventsWithAttendanceCount} evento(s) con padrón QR
+            </p>
+          </div>
+        </div>
+
+        {/* Desglose por tipo de asistente */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4 border-t border-line px-6 py-5">
+          {[
+            { key: 'STUDENT', label: 'Alumnos' },
+            { key: 'TEACHER', label: 'Docentes' },
+            { key: 'ADMIN_STAFF', label: 'Personal Administrativo' },
+            { key: 'EXTERNAL_GUEST', label: 'Invitados Externos' },
+          ].map((cat) => {
+            const bucket = attendance.byAttendeeType[cat.key] || {
+              registered: 0,
+              checkedIn: 0,
+            };
+            const pct =
+              bucket.registered > 0
+                ? Math.min(100, Math.round((bucket.checkedIn / bucket.registered) * 100))
+                : 0;
+            return (
+              <div key={cat.key}>
+                <div className="flex items-baseline justify-between gap-3 text-xs">
+                  <span className="font-medium text-ink">{cat.label}</span>
+                  <span className="font-mono text-ink">
+                    {bucket.checkedIn} <span className="text-ink-3">/ {bucket.registered}</span>
+                  </span>
+                </div>
+                <div className="mt-2 h-[3px] bg-sunk">
+                  <div className="h-full bg-ink" style={{ width: `${pct}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Eventos (2/3) y bandeja (1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <section className="lg:col-span-2 card overflow-hidden">
+          <div className="px-6 py-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-ink">Eventos Programados y Recientes</h2>
             <Link
               href="/eventos"
-              className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-brand hover:text-brand-dark"
+              className="text-xs font-medium text-ink underline-offset-4 hover:underline inline-flex items-center gap-1 shrink-0"
             >
-              Ver todos <ArrowRight className="h-3.5 w-3.5" />
+              Ver todos <ArrowRight strokeWidth={1.5} className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {data.upcomingEvents.length === 0 ? (
-            <div className="px-5 py-10 text-center">
-              <Calendar className="mx-auto h-7 w-7 text-line" />
-              <p className="mt-2 text-xs text-muted">No hay eventos próximos programados.</p>
-              <Link href="/eventos/nuevo" className="ui-btn-secondary mt-3">
-                <PlusCircle className="h-3.5 w-3.5 text-brand" />
-                Registrar el primero
-              </Link>
+            <div className="px-6 py-8 border-t border-line text-xs text-ink-2">
+              No hay eventos próximos programados.
             </div>
           ) : (
-            <ul className="divide-y divide-line">
+            <div className="divide-y divide-line border-t border-line">
               {data.upcomingEvents.map((ev) => (
-                <li
+                <div
                   key={ev.id}
-                  className="flex flex-col justify-between gap-3 px-[17px] py-3.5 transition-colors hover:bg-surface-muted/60 sm:flex-row sm:items-center"
+                  className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
-                  <div className="min-w-0 space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <EventLifecycleBadge status={ev.lifecycleStatus} compact />
-                      <CriticalityBadge level={ev.criticalityLevel} compact />
-                      <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
-                    </div>
+                  <div className="min-w-0 space-y-2">
+                    <p className="font-mono text-[11px] text-ink-3">
+                      {ev.date} · {ev.startTime} - {ev.endTime}
+                    </p>
                     <Link
                       href={`/eventos/${ev.id}`}
-                      className="block truncate text-[13px] font-semibold text-ink hover:text-brand"
+                      className="block text-[15px] font-semibold text-ink leading-snug underline-offset-4 hover:underline"
                     >
                       {ev.name}
                     </Link>
-                    <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 text-[11px] text-muted">
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {ev.space.name}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {ev.date} · {ev.startTime}–{ev.endTime}
-                      </span>
-                      <span className="inline-flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {ev.responsibleName}
-                      </span>
+                    <p className="text-xs text-ink-2">
+                      {ev.space.name} · Resp: {ev.responsibleName}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <EventLifecycleBadge status={ev.lifecycleStatus} />
+                      <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
+                      <CriticalityBadge level={ev.criticalityLevel} />
                     </div>
                   </div>
                   <Link
                     href={`/eventos/${ev.id}`}
-                    className="ui-btn-secondary shrink-0 self-start text-[11px] sm:self-center"
+                    className="inline-flex h-9 items-center px-4 rounded-full border border-line-strong text-xs font-medium text-ink hover:border-ink shrink-0 self-start sm:self-center transition-colors"
                   >
-                    Abrir expediente
+                    Abrir Expediente
                   </Link>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </section>
 
-        {/* Bandeja de autorizaciones */}
-        <section className="ui-card overflow-hidden lg:col-span-4">
-          <div className="flex items-center justify-between gap-3 border-b border-line px-[17px] py-3.5">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-brand-gold" />
-              <h2 className="ui-card-title">Bandeja de autorizaciones</h2>
-            </div>
+        <section className="card overflow-hidden">
+          <div className="px-6 py-4 flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-ink">Bandeja de Autorizaciones</h2>
             <Link
               href="/autorizaciones"
-              className="shrink-0 text-[11px] font-semibold text-brand hover:text-brand-dark"
+              className="text-xs font-medium text-ink underline-offset-4 hover:underline shrink-0"
             >
-              Ir
+              Ir a bandeja
             </Link>
           </div>
 
-          <div className="space-y-2 p-[17px]">
-            {!hasPendingInbox ? (
-              <div className="py-7 text-center">
-                <CheckCircle2 className="mx-auto h-7 w-7 text-brand-mint" />
-                <p className="mt-2 text-xs text-muted">
-                  No tienes solicitudes pendientes por resolver.
-                </p>
-              </div>
-            ) : (
-              <>
+          {data.pendingSpaceRequests.length === 0 &&
+          data.pendingEquipmentRequests.length === 0 &&
+          data.pendingScheduleChanges.length === 0 ? (
+            <div className="px-6 py-8 border-t border-line text-xs text-ink-2">
+              No tienes solicitudes pendientes por resolver.
+            </div>
+          ) : (
+            <>
+              <div className="divide-y divide-line border-t border-line">
                 {data.pendingSpaceRequests.map((req) => (
-                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
-                    <span className="ui-chip-progress">Solicitud de espacio</span>
-                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
-                      {req.event.name}
-                    </p>
-                    <p className="ui-caption mt-0.5 truncate">
+                  <div key={req.id} className="px-6 py-3.5 text-xs space-y-1">
+                    <span className="label-mono">Solicitud de Espacio</span>
+                    <p className="font-semibold text-ink">{req.event.name}</p>
+                    <p className="text-ink-2">
                       {req.event.space.name} · {req.event.date} ({req.event.startTime})
                     </p>
                   </div>
                 ))}
 
                 {data.pendingEquipmentRequests.map((req) => (
-                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
-                    <span className="ui-chip-info">Solicitud de equipo</span>
-                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
-                      {req.event.name}
-                    </p>
-                    <p className="ui-caption mt-0.5 truncate">
+                  <div key={req.id} className="px-6 py-3.5 text-xs space-y-1">
+                    <span className="label-mono">Solicitud de Equipo</span>
+                    <p className="font-semibold text-ink">{req.event.name}</p>
+                    <p className="text-ink-2">
                       {req.event.space.name} · {req.event.date}
                     </p>
                   </div>
                 ))}
 
                 {data.pendingScheduleChanges.map((req) => (
-                  <div key={req.id} className="rounded-xl border border-line bg-surface-muted p-3">
-                    <span className="ui-chip bg-brand-soft text-brand-deep">Cambio de horario</span>
-                    <p className="mt-1.5 truncate text-[12px] font-semibold text-ink">
-                      {req.event.name}
-                    </p>
-                    <p className="ui-caption mt-0.5 truncate">
-                      Propuesto: {req.proposedDate} ({req.proposedStartTime}–
-                      {req.proposedEndTime})
+                  <div key={req.id} className="px-6 py-3.5 text-xs space-y-1">
+                    <span className="label-mono">Cambio de Horario</span>
+                    <p className="font-semibold text-ink">{req.event.name}</p>
+                    <p className="text-ink-2">
+                      Propuesto: {req.proposedDate} ({req.proposedStartTime}-{req.proposedEndTime})
                     </p>
                   </div>
                 ))}
+              </div>
 
-                <Link href="/autorizaciones" className="ui-btn-deep w-full">
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  Resolver solicitudes
+              <div className="border-t border-line px-6 py-4">
+                <Link
+                  href="/autorizaciones"
+                  className="flex h-9 w-full items-center justify-center rounded-full bg-ink hover:bg-ink-2 text-surface text-xs font-medium transition-colors"
+                >
+                  Resolver Solicitudes
                 </Link>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </section>
       </div>
     </div>

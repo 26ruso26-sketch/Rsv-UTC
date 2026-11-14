@@ -106,21 +106,21 @@ export default function MisEventosPage() {
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900">Mis Eventos y Solicitudes</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl sm:text-[28px] font-semibold text-ink">Mis Eventos y Solicitudes</h1>
+          <p className="text-xs text-ink-3">
             Consulta el ciclo de vida formal de cada evento, estados de espacio y equipo, control de
             asistencia QR y cierre documental.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+          <div className="inline-flex rounded-xl border border-line bg-surface p-1">
             <button
               type="button"
               onClick={() => setScopeFilter('default')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${scopeFilter === 'default'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:text-slate-900'
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${scopeFilter === 'default'
+                  ? 'bg-ink text-surface'
+                  : 'text-ink-2 hover:text-ink'
                 }`}
             >
               Todos de mi ámbito
@@ -128,9 +128,9 @@ export default function MisEventosPage() {
             <button
               type="button"
               onClick={() => setScopeFilter('mine')}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${scopeFilter === 'mine'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:text-slate-900'
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${scopeFilter === 'mine'
+                  ? 'bg-ink text-surface'
+                  : 'text-ink-2 hover:text-ink'
                 }`}
             >
               Registrados por mí
@@ -139,7 +139,7 @@ export default function MisEventosPage() {
 
           <Link
             href="/eventos/nuevo"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-800"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-surface hover:bg-ink-2"
           >
             <CalendarPlus className="h-4 w-4" />
             Nuevo Evento
@@ -148,7 +148,7 @@ export default function MisEventosPage() {
       </div>
 
       {/* Pestañas Rápidas de Ciclo de Vida con Contadores Reales desde SQLite (Sección 7) */}
-      <div className="flex flex-wrap items-center gap-1.5 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-line bg-surface p-2.5">
         {LIFECYCLE_TABS.map((tab) => {
           const active = lifecycleFilter === tab.key;
           const count = lifecycleCounters[tab.counterKey] ?? 0;
@@ -157,14 +157,14 @@ export default function MisEventosPage() {
               key={tab.key}
               type="button"
               onClick={() => setLifecycleFilter(tab.key)}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition ${active
-                  ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200/70'
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${active
+                  ? 'bg-ink text-surface'
+                  : 'bg-paper text-ink-2 hover:bg-sunk border border-line'
                 }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold ${active ? 'bg-white text-emerald-900' : 'bg-slate-200 text-slate-800'
+                className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold ${active ? 'bg-surface text-accent' : 'bg-sunk text-ink'
                   }`}
               >
                 {count}
@@ -175,16 +175,16 @@ export default function MisEventosPage() {
       </div>
 
       {/* Barra de Filtros (Sección 7 Fase 2) */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-line bg-surface p-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700">
-            <Filter className="h-3.5 w-3.5 text-emerald-700" />
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2">
+            <Filter className="h-3.5 w-3.5 text-accent" />
             Filtros avanzados de búsqueda
           </span>
           <button
             type="button"
             onClick={handleClearFilters}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800"
+            className="inline-flex items-center gap-1 text-xs font-medium text-ink-3 hover:text-ink"
           >
             <RotateCcw className="h-3 w-3" />
             Limpiar filtros
@@ -193,21 +193,21 @@ export default function MisEventosPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Fecha</label>
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">Fecha</label>
             <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+              className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Espacio</label>
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">Espacio</label>
             <select
               value={spaceFilter}
               onChange={(e) => setSpaceFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+              className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
             >
               <option value="ALL">Todos los espacios (9)</option>
               {spaces.map((s) => (
@@ -219,13 +219,13 @@ export default function MisEventosPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">
               Estado de Autorización
             </label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+              className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
             >
               <option value="ALL">Todos</option>
               <option value="PENDING">Pendiente</option>
@@ -236,11 +236,11 @@ export default function MisEventosPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">Criticidad</label>
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">Criticidad</label>
             <select
               value={criticalityFilter}
               onChange={(e) => setCriticalityFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+              className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
             >
               <option value="ALL">Todos los niveles</option>
               <option value="1">Nivel 1 — Asiste rector</option>
@@ -251,13 +251,13 @@ export default function MisEventosPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">
               Usuario que registró
             </label>
             <select
               value={createdByFilter}
               onChange={(e) => setCreatedByFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+              className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
             >
               <option value="ALL">Todos los usuarios</option>
               {users.map((u) => (
@@ -269,7 +269,7 @@ export default function MisEventosPage() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-slate-600 mb-1">
+            <label className="block text-[11px] font-semibold text-ink-2 mb-1">
               Responsable / Evento
             </label>
             <div className="flex gap-1.5">
@@ -279,12 +279,12 @@ export default function MisEventosPage() {
                 onChange={(e) => setResponsibleFilter(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && fetchEvents()}
                 placeholder="Nombre o depto..."
-                className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-900"
+                className="w-full rounded-md border border-line-strong bg-paper px-3 py-2 text-xs text-ink"
               />
               <button
                 type="button"
                 onClick={fetchEvents}
-                className="rounded-xl bg-slate-900 px-3 py-2 text-white hover:bg-slate-800"
+                className="rounded-full bg-ink px-3 py-2 text-surface hover:bg-ink-2"
                 title="Buscar"
               >
                 <Search className="h-3.5 w-3.5" />
@@ -295,15 +295,15 @@ export default function MisEventosPage() {
       </div>
 
       {/* Tabla de Eventos */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-line bg-surface overflow-hidden">
         {loading ? (
-          <div className="p-10 text-center text-xs text-slate-500">Cargando eventos...</div>
+          <div className="p-10 text-center text-xs text-ink-3">Cargando eventos...</div>
         ) : events.length === 0 ? (
           <div className="p-10 text-center space-y-2">
-            <p className="text-sm font-bold text-slate-700">
+            <p className="text-sm font-semibold text-ink-2">
               No se encontraron eventos con los filtros seleccionados.
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-3">
               Ajusta los criterios de búsqueda o selecciona otra pestaña de ciclo de vida.
             </p>
           </div>
@@ -311,7 +311,7 @@ export default function MisEventosPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                <tr className="border-b border-line bg-paper/80 text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-2">
                   <th className="py-3.5 px-4">Evento / Modalidad</th>
                   <th className="py-3.5 px-4">Responsable</th>
                   <th className="py-3.5 px-4">Espacio</th>
@@ -322,7 +322,7 @@ export default function MisEventosPage() {
                   <th className="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 text-xs">
+              <tbody className="divide-y divide-line text-xs">
                 {events.map((ev) => {
                   const hasRejection =
                     ev.spaceRequest?.status === 'REJECTED' ||
@@ -335,22 +335,22 @@ export default function MisEventosPage() {
 
                   return (
                     <React.Fragment key={ev.id}>
-                      <tr className="hover:bg-slate-50/90 transition">
+                      <tr className="hover:bg-paper/90 transition">
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2">
                             <Link
                               href={`/eventos/${ev.id}`}
-                              className="font-bold text-slate-900 hover:text-emerald-700"
+                              className="font-semibold text-ink hover:text-accent-hover"
                             >
                               {ev.name}
                             </Link>
                           </div>
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-ink-3">
                             <span>Registró: @{ev.createdBy?.username}</span>
                             <span
-                              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-bold border ${accessMode === 'RESTRICTED'
-                                  ? 'bg-purple-50 text-purple-800 border-purple-200'
-                                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold border ${accessMode === 'RESTRICTED'
+                                  ? 'bg-sunk text-ink border-line-strong'
+                                  : 'bg-accent-soft text-accent border-accent/30'
                                 }`}
                             >
                               {accessMode === 'RESTRICTED' ? (
@@ -361,13 +361,13 @@ export default function MisEventosPage() {
                               {accessMode === 'RESTRICTED' ? 'Restringido' : 'Abierto'}
                             </span>
                             {activeAttendeesCount > 0 && (
-                              <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                              <span className="inline-flex items-center gap-1 rounded bg-sunk px-1.5 py-0.5 text-[11px] font-semibold text-ink-2">
                                 <Users className="h-2.5 w-2.5" />
                                 {activeAttendeesCount} reg/inv
                               </span>
                             )}
                             {ev.evidences?.length > 0 && (
-                              <span className="inline-flex items-center gap-1 rounded bg-sky-50 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 border border-sky-200">
+                              <span className="inline-flex items-center gap-1 rounded bg-sunk px-1.5 py-0.5 text-[11px] font-medium text-ink-2 border border-line-strong">
                                 <FileText className="h-3 w-3" />
                                 {ev.evidences.length} PDF
                               </span>
@@ -376,27 +376,27 @@ export default function MisEventosPage() {
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <p className="font-semibold text-slate-900">{ev.responsibleName}</p>
-                          <p className="text-[11px] text-slate-500">{ev.responsibleDepartment}</p>
+                          <p className="font-medium text-ink">{ev.responsibleName}</p>
+                          <p className="text-[11px] text-ink-3">{ev.responsibleDepartment}</p>
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <p className="font-semibold text-slate-800">{ev.space?.name}</p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="font-medium text-ink">{ev.space?.name}</p>
+                          <p className="text-[11px] text-ink-3">
                             Autoriza: {ev.space?.authorizer?.username}
                           </p>
                         </td>
 
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <p className="font-medium text-slate-800">{formatSpanishDate(ev.date)}</p>
-                          <p className="font-bold text-slate-900">
+                          <p className="font-medium text-ink">{formatSpanishDate(ev.date)}</p>
+                          <p className="font-semibold text-ink">
                             {ev.startTime} - {ev.endTime}
                           </p>
-                          <p className="text-[10px] text-amber-700">
+                          <p className="text-[11px] text-warn">
                             Limpieza: {ev.endTime} - {ev.cleaningEndTime}
                           </p>
                           {pendingChange && (
-                            <span className="mt-1 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
+                            <span className="mt-1 inline-flex items-center gap-1 rounded bg-warn-soft px-1.5 py-0.5 text-[11px] font-semibold text-warn">
                               <Clock className="h-3 w-3" />
                               Cambio: {pendingChange.proposedStartTime}-
                               {pendingChange.proposedEndTime}
@@ -407,7 +407,7 @@ export default function MisEventosPage() {
                         <td className="py-3.5 px-4">
                           {ev.lifecycle && <EventLifecycleBadge state={ev.lifecycle.state} />}
                           {ev.lifecycle?.state === 'COMPLETED_PENDING_EVIDENCE' && (
-                            <p className="mt-1 text-[10px] font-semibold text-amber-800">
+                            <p className="mt-1 text-[11px] font-medium text-warn">
                               Requiere PDF de cierre
                             </p>
                           )}
@@ -415,11 +415,11 @@ export default function MisEventosPage() {
 
                         <td className="py-3.5 px-4 space-y-1">
                           <div>
-                            <span className="text-[10px] text-slate-500 mr-1">Espacio:</span>
+                            <span className="text-[11px] text-ink-3 mr-1">Espacio:</span>
                             <RequestStatusBadge status={ev.spaceRequest?.status} />
                           </div>
                           <div>
-                            <span className="text-[10px] text-slate-500 mr-1">Equipo:</span>
+                            <span className="text-[11px] text-ink-3 mr-1">Equipo:</span>
                             {ev.equipmentRequest ? (
                               <RequestStatusBadge status={ev.equipmentRequest.status} />
                             ) : (
@@ -435,7 +435,7 @@ export default function MisEventosPage() {
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <Link
                             href={`/eventos/${ev.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-sm hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-accent-soft hover:border-accent/30 hover:text-accent-hover"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             Detalle
@@ -444,11 +444,11 @@ export default function MisEventosPage() {
                       </tr>
 
                       {hasRejection && (
-                        <tr className="bg-rose-50/70">
+                        <tr className="bg-bad-soft/70">
                           <td colSpan={8} className="px-4 py-2.5">
-                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-rose-900">
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-bad">
                               <div className="flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                                <AlertTriangle className="h-4 w-4 text-bad shrink-0" />
                                 <div>
                                   {ev.spaceRequest?.status === 'REJECTED' && (
                                     <p>
@@ -466,7 +466,7 @@ export default function MisEventosPage() {
                               </div>
                               <Link
                                 href={`/eventos/${ev.id}`}
-                                className="rounded-lg bg-rose-700 px-3 py-1 text-[11px] font-bold text-white hover:bg-rose-800"
+                                className="rounded-full bg-bad px-3 py-1 text-[11px] font-semibold text-surface hover:bg-bad/90"
                               >
                                 Revisar en Detalle →
                               </Link>

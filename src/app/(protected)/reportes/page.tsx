@@ -5,24 +5,22 @@ import Link from 'next/link';
 import {
   FileBarChart,
   Download,
-  MapPin,
   FileText,
   FileSpreadsheet,
+  Building2,
+  MapPin,
   Users,
   GraduationCap,
   Clock,
   CheckCircle2,
   Filter,
-  RotateCcw,
-  ArrowUpRight,
-  Building2,
 } from 'lucide-react';
 import {
   CriticalityBadge,
   EventLifecycleBadge,
   RequestStatusBadge,
 } from '@/components/ui/StatusBadge';
-import { ReportData } from '@/types/reports';
+import { EventLifecycleStatus } from '@/types';
 
 interface SpaceOption {
   id: string;
@@ -53,69 +51,136 @@ interface DeptOption {
   areaType: string;
 }
 
-const LIFECYCLE_OPTIONS = [
-  { value: 'ALL', label: 'Todos los estados' },
-  { value: 'PENDING_APPROVAL', label: 'Pendientes de autorización' },
-  { value: 'SCHEDULED', label: 'Programados' },
-  { value: 'IN_PROGRESS', label: 'En curso' },
-  { value: 'CONCLUDED', label: 'Concluidos (todos)' },
-  { value: 'COMPLETED_PENDING_EVIDENCE', label: 'Pendientes de evidencia' },
-  { value: 'CLOSED', label: 'Cerrados con evidencia' },
-  { value: 'REJECTED', label: 'Rechazados' },
-  { value: 'EXPIRED', label: 'Vencidos' },
-];
-
-function KpiCard({
-  label,
-  value,
-  caption,
-  tone = 'plain',
-}: {
-  label: string;
-  value: React.ReactNode;
-  caption: React.ReactNode;
-  tone?: 'plain' | 'feature';
-}) {
-  const feature = tone === 'feature';
-  return (
-    <div className={`p-[15px] ${feature ? 'ui-card-feature' : 'ui-card'}`}>
-      <p
-        className={`text-[10px] font-semibold uppercase tracking-[0.06em] ${
-          feature ? 'text-brand-gold' : 'text-muted'
-        }`}
-      >
-        {label}
-      </p>
-      <p
-        className={`mt-2.5 text-[28px] font-semibold leading-none tracking-tight ${
-          feature ? 'text-white' : 'text-ink'
-        }`}
-      >
-        {value}
-      </p>
-      <p className={`mt-2 text-[11px] ${feature ? 'text-white/70' : 'text-muted'}`}>{caption}</p>
-    </div>
-  );
-}
-
-function CardHead({
-  icon: Icon,
-  title,
-  aside,
-}: {
-  icon: typeof Users;
-  title: string;
-  aside?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-line px-[17px] py-3.5">
-      <div className="flex min-w-0 items-center gap-2">
-        <Icon className="h-4 w-4 shrink-0 text-brand" />
-        <h2 className="ui-card-title truncate">{title}</h2>
-      </div>
-      {aside}
-    </div>
-  );
+interface ReportData {
+  summary: {
+    totalEvents: number;
+    pendingApproval: number;
+    scheduled: number;
+    inProgress: number;
+    completedPendingEvidence: number;
+    closed: number;
+    rejected: number;
+    expired: number;
+    openEvents: number;
+    restrictedEvents: number;
+    totalRegisteredActive: number;
+    totalRevoked: number;
+    totalQrGenerated: number;
+    totalInvitationsSent: number;
+    totalInvitationsFailed: number;
+    totalInvitationsPending: number;
+    totalCheckedIn: number;
+    totalCheckedInQr: number;
+    totalCheckedInManual: number;
+    totalPendingCheckIn: number;
+    globalAttendancePct: number;
+    globalOccupancyPct: number;
+    totalScanAttempts: number;
+    totalScanRejected: number;
+  };
+  bySpace: {
+    spaceName: string;
+    buildingName: string;
+    capacity: number;
+    total: number;
+    approved: number;
+    pending: number;
+    rejected: number;
+    closed: number;
+    pendingEvidence: number;
+    registeredAttendees: number;
+    checkedInAttendees: number;
+  }[];
+  byBuilding: {
+    buildingName: string;
+    totalEvents: number;
+    approvedEvents: number;
+    closedEvents: number;
+    pendingEvidenceEvents: number;
+    registeredAttendees: number;
+    checkedInAttendees: number;
+  }[];
+  byCareer: {
+    code: string;
+    name: string;
+    registered: number;
+    checkedIn: number;
+    attendancePct: number;
+  }[];
+  byAcademicGrade: {
+    code: string;
+    name: string;
+    levelOrder: number;
+    registered: number;
+    checkedIn: number;
+    attendancePct: number;
+  }[];
+  byDepartmentArea: {
+    code: string;
+    name: string;
+    areaType: string;
+    registered: number;
+    checkedIn: number;
+    attendancePct: number;
+  }[];
+  byAttendeeType: {
+    type: string;
+    label: string;
+    registered: number;
+    checkedIn: number;
+    qrMethod: number;
+    manualMethod: number;
+  }[];
+  peakCheckInHours: { hour: string; count: number }[];
+  events: {
+    id: string;
+    demoCode?: string | null;
+    name: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    cleaningEndTime: string;
+    responsibleName: string;
+    responsibleDepartment: string;
+    criticalityLevel: number;
+    lifecycleStatus: EventLifecycleStatus;
+    space: { name: string; capacity: number; building?: { name: string } | null };
+    createdBy: { fullName: string; username: string };
+    spaceRequest?: { status: string } | null;
+    equipmentRequest?: { status: string } | null;
+    attendanceStats: {
+      accessMode: string;
+      checkInOpen: boolean;
+      registeredActive: number;
+      revoked: number;
+      qrGenerated: number;
+      invitationsSent: number;
+      invitationsFailed: number;
+      invitationsPending: number;
+      checkedIn: number;
+      pendingCheckIn: number;
+      attendancePct: number;
+      spaceCapacity: number;
+      occupancyPct: number;
+      rejectedScans: number;
+    };
+    filteredAttendees: {
+      id: string;
+      fullName: string;
+      email: string;
+      attendeeType: string;
+      enrollmentNumber: string | null;
+      careerName: string | null;
+      academicGradeName: string | null;
+      departmentAreaName: string | null;
+      organization: string | null;
+      registrationStatus: string;
+      checkedInAt: string | null;
+      checkInMethod: string | null;
+      checkedInByName: string | null;
+      invitationStatus: string;
+    }[];
+  }[];
 }
 
 export default function ReportsPage() {
@@ -150,10 +215,11 @@ export default function ReportsPage() {
         setCareers(c.careers || []);
         setAcademicGrades(c.academicGrades || []);
         setDepartmentAreas(c.departmentAreas || []);
-      })
-      .catch(() => undefined);
+      });
   }, []);
 
+  // Filtros activos en formato de query: los comparten la consulta de la
+  // pantalla, las descargas del servidor y la vista imprimible del PDF.
   const queryString = useMemo(() => {
     const params = new URLSearchParams();
     if (startDate) params.set('startDate', startDate);
@@ -180,8 +246,6 @@ export default function ReportsPage() {
     departmentAreaId,
   ]);
 
-  const activeFilterCount = queryString ? queryString.split('&').length : 0;
-
   useEffect(() => {
     setLoading(true);
     fetch(`/api/reports${queryString ? `?${queryString}` : ''}`, { cache: 'no-store' })
@@ -190,20 +254,11 @@ export default function ReportsPage() {
       .finally(() => setLoading(false));
   }, [queryString]);
 
-  const resetFilters = () => {
-    setStartDate('');
-    setEndDate('');
-    setSpaceId('ALL');
-    setBuildingId('ALL');
-    setLifecycle('ALL');
-    setAccessMode('ALL');
-    setAttendeeType('ALL');
-    setCareerId('ALL');
-    setAcademicGradeId('ALL');
-    setDepartmentAreaId('ALL');
-  };
-
-  /** Descarga un archivo generado en el servidor con el formato institucional. */
+  /**
+   * Descarga un archivo generado en el servidor con el formato institucional.
+   * `xlsx` rellena la plantilla templates/reporte-eventos-erm-utc.xlsx;
+   * `csv` usa el mismo diseño en texto plano; `padron` es el detalle nominal.
+   */
   const downloadExport = useCallback(
     async (format: 'xlsx' | 'csv' | 'padron') => {
       setDownloading(format);
@@ -249,214 +304,108 @@ export default function ReportsPage() {
     [queryString]
   );
 
-  const peakHour = data?.peakCheckInHours?.length
-    ? [...data.peakCheckInHours].sort((a, b) => b.count - a.count)[0]
-    : null;
-
   return (
-    <div className="space-y-5">
-      {/* ===================== Encabezado ===================== */}
-      <div className="flex flex-col justify-between gap-3.5 md:flex-row md:items-end">
-        <div className="min-w-0">
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-[28px]">
-            Reportes y estadísticas
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-[28px] font-semibold text-ink">
+            Reportes Ejecutivos, Ciclo de Vida y Estadísticas de Asistencia QR
           </h1>
-          <p className="mt-1 max-w-2xl text-[13px] text-muted">
-            Análisis por evento, recinto, carrera, grado académico, departamento, horario pico y
-            método de acceso (QR o manual), exportable en los formatos institucionales.
+          <p className="text-xs text-ink-3 mt-0.5">
+            Análisis integral por evento, recinto, carrera, grado académico, departamento, horario
+            pico y método de acceso (QR vs Manual)
           </p>
         </div>
-        <Link
-          href={`/reportes/imprimir${queryString ? `?${queryString}` : ''}`}
-          className="ui-btn-primary shrink-0"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Generar PDF institucional
-        </Link>
-      </div>
-
-      {/* ===================== Centro de exportación ===================== */}
-      <section className="ui-card p-[17px]">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Download className="h-4 w-4 text-brand" />
-            <div>
-              <h2 className="ui-card-title">Centro de exportación</h2>
-              <p className="ui-caption mt-0.5">
-                Los archivos respetan los{' '}
-                {activeFilterCount > 0
-                  ? `${activeFilterCount} filtro(s) activos`
-                  : 'filtros activos'}{' '}
-                de esta pantalla.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-          {/* PDF institucional */}
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           <Link
             href={`/reportes/imprimir${queryString ? `?${queryString}` : ''}`}
-            className="group flex items-start gap-3 rounded-card border border-brand-deep/40 bg-brand-deep p-3.5 text-white transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-hover"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-ink hover:bg-ink-2 text-surface text-xs font-medium"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
-              <FileText className="h-4 w-4 text-brand-gold" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-semibold">Reporte PDF de métricas</span>
-                <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-white/60 transition-colors group-hover:text-white" />
-              </span>
-              <span className="mt-1 block text-[11px] leading-snug text-white/70">
-                Plantilla oficial ERM UTC en A4, con folio, sello QR de verificación, KPIs, tablas
-                y firma del responsable.
-              </span>
-            </span>
+            <FileText className="w-3.5 h-3.5" />
+            PDF Plantilla Institucional
           </Link>
-
-          {/* Excel plantilla */}
           <button
-            type="button"
             onClick={() => void downloadExport('xlsx')}
             disabled={downloading !== null || !data}
-            className="group flex items-start gap-3 rounded-card border border-line bg-surface p-3.5 text-left shadow-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-ink hover:bg-ink-2 disabled:opacity-50 text-surface text-xs font-medium"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft">
-              <FileSpreadsheet className="h-4 w-4 text-brand-deep" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-semibold text-ink">
-                  {downloading === 'xlsx' ? 'Generando Excel…' : 'Reporte general (Excel)'}
-                </span>
-                <Download className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-brand" />
-              </span>
-              <span className="mt-1 block text-[11px] leading-snug text-muted">
-                Plantilla <span className="font-medium text-ink">Reporte de Eventos</span> con
-                hoja de resumen gráfico, totales y promedios calculados.
-              </span>
-            </span>
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            {downloading === 'xlsx' ? 'Generando Excel...' : 'Excel Plantilla ERM'}
           </button>
-
-          {/* CSV plantilla */}
           <button
-            type="button"
             onClick={() => void downloadExport('csv')}
             disabled={downloading !== null || !data}
-            className="group flex items-start gap-3 rounded-card border border-line bg-surface p-3.5 text-left shadow-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-line bg-surface hover:bg-paper disabled:opacity-50 text-ink-2 text-xs font-medium"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted">
-              <FileSpreadsheet className="h-4 w-4 text-brand" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-semibold text-ink">
-                  {downloading === 'csv' ? 'Generando CSV…' : 'Reporte general (CSV)'}
-                </span>
-                <Download className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-brand" />
-              </span>
-              <span className="mt-1 block text-[11px] leading-snug text-muted">
-                Mismas columnas de la plantilla en texto plano (UTF-8), para hojas de cálculo o
-                tableros externos.
-              </span>
-            </span>
+            <Download className="w-3.5 h-3.5" />
+            {downloading === 'csv' ? 'Generando CSV...' : 'CSV Resumen Eventos'}
           </button>
-
-          {/* CSV padrón nominal */}
           <button
-            type="button"
             onClick={() => void downloadExport('padron')}
             disabled={downloading !== null || !data}
-            className="group flex items-start gap-3 rounded-card border border-line bg-surface p-3.5 text-left shadow-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60 sm:col-span-2 xl:col-span-3"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-line bg-surface hover:bg-paper disabled:opacity-50 text-ink-2 text-xs font-medium"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted">
-              <Users className="h-4 w-4 text-brand" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-semibold text-ink">
-                  {downloading === 'padron'
-                    ? 'Generando padrón…'
-                    : 'Padrón nominal de asistentes (CSV)'}
-                </span>
-                <Download className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-brand" />
-              </span>
-              <span className="mt-1 block text-[11px] leading-snug text-muted">
-                Detalle persona por persona: matrícula, carrera, grado, área, estado de
-                invitación, hora de entrada, método de validación y operador que la registró.
-              </span>
-            </span>
+            <Download className="w-3.5 h-3.5" />
+            {downloading === 'padron' ? 'Generando padrón...' : 'CSV Padrón Nominal'}
           </button>
         </div>
+      </div>
 
-        <div className="mt-3 rounded-xl bg-surface-muted p-3">
-          <p className="text-[11px] leading-snug text-muted">
-            <span className="font-semibold text-ink">Nota sobre la plantilla Excel:</span> la
-            columna <span className="font-medium text-ink">«Ejes Univ. Pertinente»</span> se
-            entrega vacía y conserva la lista desplegable de la plantilla, porque el eje
-            universitario no se captura al registrar el evento. El resto de columnas se llena
-            automáticamente desde el sistema.
-          </p>
-        </div>
-
+      {/* Nota de formato y errores de exportación */}
+      <div className="rounded-xl border border-line bg-surface p-3.5 print:hidden">
+        <p className="text-[11px] text-ink-2 leading-snug">
+          <span className="font-semibold text-ink">Formatos institucionales:</span> los cuatro
+          archivos respetan los filtros activos de esta pantalla. El PDF usa la plantilla oficial
+          ERM UTC (folio, sello QR y firma) y el Excel rellena{' '}
+          <span className="font-mono text-[11px]">templates/reporte-eventos-erm-utc.xlsx</span>{' '}
+          conservando su hoja de resumen gráfico. La columna «Ejes Univ. Pertinente» se entrega
+          vacía y conserva su lista desplegable, porque el eje universitario no se captura al
+          registrar el evento.
+        </p>
         {exportError && (
-          <p className="mt-3 rounded-xl border border-[#f0d4d3] bg-[#F9E8E7] p-3 text-[11px] font-medium text-[#B85D59]">
+          <p className="mt-2.5 rounded-md border border-bad/30 bg-bad-soft p-2.5 text-[11px] font-medium text-bad">
             {exportError}
           </p>
         )}
-      </section>
+      </div>
 
-      {/* ===================== Filtros ===================== */}
-      <section className="ui-card p-[17px]">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-brand" />
-            <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">
-              Filtros de eventos y participación académica
-            </h2>
-          </div>
-          {activeFilterCount > 0 && (
-            <button type="button" onClick={resetFilters} className="ui-btn-secondary text-[11px]">
-              <RotateCcw className="h-3 w-3" />
-              Limpiar {activeFilterCount} filtro(s)
-            </button>
-          )}
+      {/* Filters (Section 22) */}
+      <div className="bg-surface rounded-xl border border-line p-4 space-y-3 print:hidden">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+          <Filter className="w-3.5 h-3.5 text-accent" />
+          Filtros de Eventos y Participación Académica
         </div>
-
-        <div className="mt-3.5 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <div>
-            <label className="ui-field-label" htmlFor="f-start">
-              Fecha desde
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Fecha Desde
             </label>
             <input
-              id="f-start"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong"
             />
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-end">
-              Fecha hasta
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Fecha Hasta
             </label>
             <input
-              id="f-end"
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong"
             />
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-building">
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
               Edificio
             </label>
             <select
-              id="f-building"
               value={buildingId}
               onChange={(e) => setBuildingId(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todos los edificios</option>
               {buildings.map((b) => (
@@ -467,14 +416,13 @@ export default function ReportsPage() {
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-space">
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
               Espacio
             </label>
             <select
-              id="f-space"
               value={spaceId}
               onChange={(e) => setSpaceId(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todos los espacios</option>
               {spaces.map((s) => (
@@ -485,63 +433,64 @@ export default function ReportsPage() {
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-lifecycle">
-              Estado del ciclo de vida
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Estado Ciclo de Vida
             </label>
             <select
-              id="f-lifecycle"
               value={lifecycle}
               onChange={(e) => setLifecycle(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
-              {LIFECYCLE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value="ALL">Todos los estados</option>
+              <option value="PENDING_APPROVAL">Pendientes de autorización</option>
+              <option value="SCHEDULED">Programados</option>
+              <option value="IN_PROGRESS">En curso</option>
+              <option value="CONCLUDED">Concluidos (todos)</option>
+              <option value="COMPLETED_PENDING_EVIDENCE">Pendientes de evidencia</option>
+              <option value="CLOSED">Cerrados con evidencia</option>
+              <option value="REJECTED">Rechazados</option>
+              <option value="EXPIRED">Vencidos</option>
             </select>
           </div>
+
           <div>
-            <label className="ui-field-label" htmlFor="f-access">
-              Modalidad de acceso
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Modalidad Acceso
             </label>
             <select
-              id="f-access"
               value={accessMode}
               onChange={(e) => setAccessMode(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
-              <option value="ALL">Abiertos y restringidos</option>
-              <option value="OPEN">Solo eventos abiertos</option>
-              <option value="RESTRICTED">Solo eventos restringidos</option>
+              <option value="ALL">Abiertos y Restringidos</option>
+              <option value="OPEN">Solo Eventos Abiertos</option>
+              <option value="RESTRICTED">Solo Eventos Restringidos</option>
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-attendee">
-              Tipo de asistente
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Tipo de Asistente
             </label>
             <select
-              id="f-attendee"
               value={attendeeType}
               onChange={(e) => setAttendeeType(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todos los asistentes</option>
               <option value="STUDENT">Alumnos</option>
               <option value="TEACHER">Docentes</option>
-              <option value="ADMIN_STAFF">Personal administrativo</option>
-              <option value="EXTERNAL_GUEST">Invitados externos</option>
+              <option value="ADMIN_STAFF">Personal Administrativo</option>
+              <option value="EXTERNAL_GUEST">Invitados Externos</option>
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-career">
-              Carrera universitaria
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Carrera Universitaria
             </label>
             <select
-              id="f-career"
               value={careerId}
               onChange={(e) => setCareerId(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todas las carreras</option>
               {careers.map((c) => (
@@ -552,14 +501,13 @@ export default function ReportsPage() {
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-grade">
-              Semestre / grado
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Semestre / Grado
             </label>
             <select
-              id="f-grade"
               value={academicGradeId}
               onChange={(e) => setAcademicGradeId(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todos los grados</option>
               {academicGrades.map((g) => (
@@ -570,14 +518,13 @@ export default function ReportsPage() {
             </select>
           </div>
           <div>
-            <label className="ui-field-label" htmlFor="f-dept">
-              Departamento / área
+            <label className="block text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-1">
+              Departamento / Área
             </label>
             <select
-              id="f-dept"
               value={departmentAreaId}
               onChange={(e) => setDepartmentAreaId(e.target.value)}
-              className="ui-field"
+              className="w-full px-3 py-1.5 text-xs rounded-md border border-line-strong bg-surface"
             >
               <option value="ALL">Todos los departamentos</option>
               {departmentAreas.map((d) => (
@@ -588,328 +535,147 @@ export default function ReportsPage() {
             </select>
           </div>
         </div>
-      </section>
+      </div>
 
       {loading || !data ? (
-        <div className="space-y-2.5">
-          <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-[112px] animate-pulse rounded-card bg-surface-muted" />
-            ))}
-          </div>
-          <div className="h-64 animate-pulse rounded-card bg-surface-muted" />
-          <p className="pt-2 text-center text-xs text-muted">Generando métricas…</p>
-        </div>
+        <div className="p-10 text-center text-sm text-ink-3">Generando métricas...</div>
       ) : (
         <>
-          {/* ===================== KPIs globales ===================== */}
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-            <KpiCard
-              tone="feature"
-              label="Eventos filtrados"
-              value={data.summary.totalEvents}
-              caption={
-                <>
-                  Abiertos: {data.summary.openEvents} · Restr.: {data.summary.restrictedEvents}
-                </>
-              }
-            />
-            <KpiCard
-              label="Cierre documental"
-              value={data.summary.closed}
-              caption={<>Pend. evidencia: {data.summary.completedPendingEvidence}</>}
-            />
-            <KpiCard
-              label="Asistentes registrados"
-              value={data.summary.totalRegisteredActive}
-              caption={<>QR vigentes: {data.summary.totalQrGenerated}</>}
-            />
-            <KpiCard
-              label="Entradas verificadas"
-              value={data.summary.totalCheckedIn}
-              caption={
-                <>
-                  QR: {data.summary.totalCheckedInQr} · Manual:{' '}
-                  {data.summary.totalCheckedInManual}
-                </>
-              }
-            />
-            <KpiCard
-              label="% Asistencia global"
-              value={`${data.summary.globalAttendancePct}%`}
-              caption={<>Sin check-in: {data.summary.totalPendingCheckIn}</>}
-            />
-            <KpiCard
-              label="Intentos rechazados QR"
-              value={data.summary.totalScanRejected}
-              caption={<>De {data.summary.totalScanAttempts} lecturas</>}
-            />
+          {/* Global Summary KPIs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3.5">
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">Eventos Filtrados</p>
+              <p className="text-2xl font-semibold text-ink mt-1">{data.summary.totalEvents}</p>
+              <p className="text-[11px] text-ink-3">
+                Abiertos: {data.summary.openEvents} · Restr.: {data.summary.restrictedEvents}
+              </p>
+            </div>
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                Cierre Documental PDF
+              </p>
+              <p className="text-2xl font-semibold text-accent mt-1">{data.summary.closed}</p>
+              <p className="text-[11px] text-warn font-medium">
+                Pend. evidencia: {data.summary.completedPendingEvidence}
+              </p>
+            </div>
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                Asistentes Registrados
+              </p>
+              <p className="text-2xl font-semibold text-ink mt-1">
+                {data.summary.totalRegisteredActive}
+              </p>
+              <p className="text-[11px] text-ink-3">
+                QR vigentes: {data.summary.totalQrGenerated}
+              </p>
+            </div>
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                Entradas Verificadas
+              </p>
+              <p className="text-2xl font-semibold text-accent mt-1">
+                {data.summary.totalCheckedIn}
+              </p>
+              <p className="text-[11px] text-ink-3">
+                QR: {data.summary.totalCheckedInQr} · Manual: {data.summary.totalCheckedInManual}
+              </p>
+            </div>
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">% Asistencia Global</p>
+              <p className="text-2xl font-semibold text-ink mt-1">
+                {data.summary.globalAttendancePct}%
+              </p>
+              <p className="text-[11px] text-ink-3">
+                Sin check-in: {data.summary.totalPendingCheckIn}
+              </p>
+            </div>
+            <div className="bg-surface rounded-xl border border-line p-4">
+              <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                Intentos Rechazados QR
+              </p>
+              <p className="text-2xl font-semibold text-bad mt-1">
+                {data.summary.totalScanRejected}
+              </p>
+              <p className="text-[11px] text-ink-3">
+                De {data.summary.totalScanAttempts} lecturas totales
+              </p>
+            </div>
           </div>
 
-          {/* ===================== Desglose en dos columnas ===================== */}
-          <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-2">
-            {/* Por categoría de asistente */}
-            <section className="ui-card overflow-hidden">
-              <CardHead
-                icon={Users}
-                title="Participación por categoría y método de entrada"
-              />
-              <div className="overflow-x-auto">
-                <table className="ui-table">
-                  <thead>
-                    <tr>
-                      <th>Categoría</th>
-                      <th className="text-center">Registrados</th>
-                      <th className="text-center">Asistieron</th>
-                      <th className="text-center">Por QR</th>
-                      <th className="text-center">Manual</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.byAttendeeType.map((t) => (
-                      <tr key={t.type}>
-                        <td className="font-medium">{t.label}</td>
-                        <td className="text-center font-semibold">{t.registered}</td>
-                        <td className="text-center font-semibold text-brand-deep">
-                          {t.checkedIn}
-                        </td>
-                        <td className="text-center text-muted">{t.qrMethod}</td>
-                        <td className="text-center text-muted">{t.manualMethod}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* Breakdowns by Attendee Type, Career, Grade & Department */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* By Attendee Type & Check-in Method */}
+            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-line flex items-center gap-2">
+                <Users className="w-4 h-4 text-accent" />
+                <h2 className="text-sm font-semibold text-ink">
+                  Participación por Categoría de Asistente y Método de Entrada
+                </h2>
               </div>
-            </section>
-
-            {/* Por carrera */}
-            <section className="ui-card overflow-hidden">
-              <CardHead icon={GraduationCap} title="Asistencia de alumnos por carrera" />
-              <div className="max-h-[320px] overflow-y-auto scrollbar-slim">
-                <table className="ui-table">
-                  <thead className="sticky top-0">
-                    <tr>
-                      <th>Carrera</th>
-                      <th className="text-center">Inscritos</th>
-                      <th className="text-center">Entradas</th>
-                      <th className="text-center">% Asist.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.byCareer.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="py-7 text-center text-muted">
-                          Sin registros de alumnos en el filtro actual.
-                        </td>
-                      </tr>
-                    ) : (
-                      data.byCareer.map((c) => (
-                        <tr key={c.code}>
-                          <td>
-                            <span className="font-mono text-[10px] font-semibold text-brand-deep">
-                              {c.code}
-                            </span>{' '}
-                            <span className="font-medium">{c.name}</span>
-                          </td>
-                          <td className="text-center font-semibold">{c.registered}</td>
-                          <td className="text-center font-semibold text-brand-deep">
-                            {c.checkedIn}
-                          </td>
-                          <td className="text-center">{c.attendancePct}%</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* Grado y departamento */}
-            <section className="ui-card overflow-hidden">
-              <CardHead
-                icon={CheckCircle2}
-                title="Asistencia por semestre / grado y departamentos"
-              />
-              <div className="grid grid-cols-1 gap-4 p-[17px] sm:grid-cols-2">
-                <div>
-                  <p className="ui-label mb-2">Por semestre / cuatrimestre</p>
-                  <div className="space-y-1.5">
-                    {data.byAcademicGrade.length === 0 ? (
-                      <p className="text-[11px] text-muted">Sin datos en el filtro actual.</p>
-                    ) : (
-                      data.byAcademicGrade.map((g) => (
-                        <div
-                          key={g.code}
-                          className="flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-2.5 py-2"
-                        >
-                          <span className="truncate text-[11px] font-medium text-ink">
-                            {g.name}
-                          </span>
-                          <span className="shrink-0 text-[11px] font-semibold text-brand-deep">
-                            {g.checkedIn}/{g.registered} ({g.attendancePct}%)
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <p className="ui-label mb-2">Por departamento / área</p>
-                  <div className="space-y-1.5">
-                    {data.byDepartmentArea.length === 0 ? (
-                      <p className="text-[11px] text-muted">Sin datos en el filtro actual.</p>
-                    ) : (
-                      data.byDepartmentArea.map((d) => (
-                        <div
-                          key={d.code}
-                          className="flex items-center justify-between gap-2 rounded-xl bg-surface-muted px-2.5 py-2"
-                        >
-                          <span className="truncate text-[11px] font-medium text-ink">
-                            {d.name}
-                          </span>
-                          <span className="shrink-0 text-[11px] font-semibold text-brand-deep">
-                            {d.checkedIn}/{d.registered}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Por espacio */}
-            <section className="ui-card overflow-hidden">
-              <CardHead
-                icon={MapPin}
-                title="Uso y asistencia por espacio universitario"
-                aside={
-                  peakHour ? (
-                    <span className="ui-chip-done shrink-0">
-                      <Clock className="h-3 w-3" />
-                      Hora pico {peakHour.hour}
-                    </span>
-                  ) : undefined
-                }
-              />
-              <div className="max-h-[320px] overflow-y-auto scrollbar-slim">
-                <table className="ui-table">
-                  <thead className="sticky top-0">
-                    <tr>
-                      <th>Espacio</th>
-                      <th className="text-center">Eventos</th>
-                      <th className="text-center">Cerrados</th>
-                      <th className="text-center">Inscritos</th>
-                      <th className="text-center">Entradas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.bySpace.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-7 text-center text-muted">
-                          Sin eventos en el filtro actual.
-                        </td>
-                      </tr>
-                    ) : (
-                      data.bySpace.map((s) => (
-                        <tr key={s.spaceName}>
-                          <td>
-                            <p className="font-medium">{s.spaceName}</p>
-                            <p className="ui-caption inline-flex items-center gap-1">
-                              <Building2 className="h-2.5 w-2.5" />
-                              {s.buildingName}
-                            </p>
-                          </td>
-                          <td className="text-center font-semibold">{s.total}</td>
-                          <td className="text-center text-muted">{s.closed}</td>
-                          <td className="text-center">{s.registeredAttendees}</td>
-                          <td className="text-center font-semibold text-brand-deep">
-                            {s.checkedInAttendees}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-
-          {/* ===================== Detalle de eventos ===================== */}
-          <section className="ui-card overflow-hidden">
-            <CardHead
-              icon={FileBarChart}
-              title={`Detalle de eventos, ciclo de vida y métricas de asistencia (${data.events.length})`}
-            />
-            <div className="overflow-x-auto">
-              <table className="ui-table">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr>
-                    <th>Evento</th>
-                    <th>Espacio y fecha</th>
-                    <th>Ciclo de vida</th>
-                    <th>Modalidad</th>
-                    <th className="text-center">Inscritos / entradas</th>
-                    <th className="text-center">% Asist. / % Ocup.</th>
+                  <tr className="bg-paper border-b border-line text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                    <th className="py-2.5 px-4">Categoría</th>
+                    <th className="py-2.5 px-4 text-center">Registrados</th>
+                    <th className="py-2.5 px-4 text-center">Asistieron</th>
+                    <th className="py-2.5 px-4 text-center">Por QR</th>
+                    <th className="py-2.5 px-4 text-center">Manual</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {data.events.length === 0 ? (
+                <tbody className="divide-y divide-line">
+                  {data.byAttendeeType.map((t) => (
+                    <tr key={t.type}>
+                      <td className="py-2.5 px-4 font-medium text-ink">{t.label}</td>
+                      <td className="py-2.5 px-4 text-center font-semibold">{t.registered}</td>
+                      <td className="py-2.5 px-4 text-center font-semibold text-accent">
+                        {t.checkedIn}
+                      </td>
+                      <td className="py-2.5 px-4 text-center">{t.qrMethod}</td>
+                      <td className="py-2.5 px-4 text-center">{t.manualMethod}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* By Career */}
+            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-line flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-accent" />
+                <h2 className="text-sm font-semibold text-ink">
+                  Asistencia de Alumnos por Carrera Universitaria
+                </h2>
+              </div>
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-paper border-b border-line text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                    <th className="py-2.5 px-4">Carrera</th>
+                    <th className="py-2.5 px-4 text-center">Inscritos</th>
+                    <th className="py-2.5 px-4 text-center">Entradas</th>
+                    <th className="py-2.5 px-4 text-center">% Asistencia</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data.byCareer.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-10 text-center text-muted">
-                        No hay eventos que cumplan los filtros seleccionados.
+                      <td colSpan={4} className="py-6 text-center text-ink-3">
+                        Sin registros de alumnos en el filtro actual.
                       </td>
                     </tr>
                   ) : (
-                    data.events.map((ev) => (
-                      <tr key={ev.id}>
-                        <td>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-[10px] font-semibold text-muted">
-                              {ev.id.slice(0, 6)}
-                            </span>
-                            <CriticalityBadge level={ev.criticalityLevel} compact />
-                          </div>
-                          <p className="mt-0.5 font-semibold text-ink">{ev.name}</p>
-                          <p className="ui-caption">{ev.responsibleName}</p>
+                    data.byCareer.map((c) => (
+                      <tr key={c.code}>
+                        <td className="py-2.5 px-4">
+                          <span className="font-mono font-semibold text-accent">{c.code}</span> —{' '}
+                          <span className="font-medium text-ink">{c.name}</span>
                         </td>
-                        <td>
-                          <p className="font-medium">{ev.space.name}</p>
-                          <p className="ui-caption">
-                            {ev.date} · {ev.startTime}–{ev.endTime}
-                          </p>
+                        <td className="py-2.5 px-4 text-center font-semibold">{c.registered}</td>
+                        <td className="py-2.5 px-4 text-center font-semibold text-accent">
+                          {c.checkedIn}
                         </td>
-                        <td>
-                          <EventLifecycleBadge status={ev.lifecycleStatus} compact />
-                          <div className="mt-1">
-                            <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className={
-                              ev.attendanceStats.accessMode === 'OPEN'
-                                ? 'ui-chip-done'
-                                : 'ui-chip-progress'
-                            }
-                          >
-                            {ev.attendanceStats.accessMode === 'OPEN' ? 'Abierto' : 'Restringido'}
-                          </span>
-                        </td>
-                        <td className="text-center">
-                          <span className="font-semibold text-ink">
-                            {ev.attendanceStats.registeredActive}
-                          </span>{' '}
-                          /{' '}
-                          <span className="font-semibold text-brand-deep">
-                            {ev.attendanceStats.checkedIn}
-                          </span>
-                        </td>
-                        <td className="text-center">
-                          <span className="font-semibold text-ink">
-                            {ev.attendanceStats.attendancePct}%
-                          </span>{' '}
-                          / <span className="text-muted">{ev.attendanceStats.occupancyPct}%</span>
+                        <td className="py-2.5 px-4 text-center font-medium">
+                          {c.attendancePct}%
                         </td>
                       </tr>
                     ))
@@ -917,7 +683,178 @@ export default function ReportsPage() {
                 </tbody>
               </table>
             </div>
-          </section>
+
+            {/* By Academic Grade & Peak Check-In Hours */}
+            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-line flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-accent" />
+                <h2 className="text-sm font-semibold text-ink">
+                  Asistencia por Semestre / Grado y Departamentos
+                </h2>
+              </div>
+              <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-2">
+                    Por Semestre / Cuatrimestre
+                  </p>
+                  <div className="space-y-1.5">
+                    {data.byAcademicGrade.map((g) => (
+                      <div
+                        key={g.code}
+                        className="flex items-center justify-between p-2 rounded bg-paper border border-line"
+                      >
+                        <span className="font-medium text-ink">{g.name}</span>
+                        <span className="font-semibold text-accent">
+                          {g.checkedIn}/{g.registered} ({g.attendancePct}%)
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3 mb-2">
+                    Por Departamento Académico / Administrativo
+                  </p>
+                  <div className="space-y-1.5">
+                    {data.byDepartmentArea.map((d) => (
+                      <div
+                        key={d.code}
+                        className="flex items-center justify-between p-2 rounded bg-paper border border-line"
+                      >
+                        <span className="font-medium text-ink truncate pr-2">{d.name}</span>
+                        <span className="font-semibold text-accent shrink-0">
+                          {d.checkedIn}/{d.registered}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* By Space & Peak Hours */}
+            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-line flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-accent" />
+                  <h2 className="text-sm font-semibold text-ink">
+                    Uso y Asistencia por Espacio Universitario
+                  </h2>
+                </div>
+                {data.peakCheckInHours.length > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-accent bg-accent-soft px-2.5 py-0.5 rounded-full">
+                    <Clock className="w-3 h-3" />
+                    Hora pico entrada: {data.peakCheckInHours[0].hour} hrs
+                  </span>
+                )}
+              </div>
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-paper border-b border-line text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                    <th className="py-2.5 px-4">Espacio</th>
+                    <th className="py-2.5 px-4 text-center">Eventos</th>
+                    <th className="py-2.5 px-4 text-center">Cerrados</th>
+                    <th className="py-2.5 px-4 text-center">Inscritos</th>
+                    <th className="py-2.5 px-4 text-center">Entradas</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data.bySpace.map((s) => (
+                    <tr key={s.spaceName}>
+                      <td className="py-2.5 px-4 font-medium text-ink">{s.spaceName}</td>
+                      <td className="py-2.5 px-4 text-center font-semibold">{s.total}</td>
+                      <td className="py-2.5 px-4 text-center text-ink-2">{s.closed}</td>
+                      <td className="py-2.5 px-4 text-center">{s.registeredAttendees}</td>
+                      <td className="py-2.5 px-4 text-center font-semibold text-accent">
+                        {s.checkedInAttendees}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Detailed Events Table */}
+          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-line flex items-center gap-2">
+              <FileBarChart className="w-4 h-4 text-accent" />
+              <h2 className="text-sm font-semibold text-ink">
+                Detalle de Eventos, Ciclo de Vida y Métricas de Asistencia ({data.events.length})
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-paper border-b border-line text-[11px] font-semibold uppercase font-mono tracking-[0.08em] text-ink-3">
+                    <th className="py-2.5 px-3">Evento</th>
+                    <th className="py-2.5 px-3">Espacio y Fecha</th>
+                    <th className="py-2.5 px-3">Ciclo de Vida</th>
+                    <th className="py-2.5 px-3">Modalidad</th>
+                    <th className="py-2.5 px-3 text-center">Inscritos / Entradas</th>
+                    <th className="py-2.5 px-3 text-center">% Asist. / % Ocup.</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {data.events.map((ev) => (
+                    <tr key={ev.id} className="hover:bg-paper/70">
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] font-semibold text-ink-3">
+                            {ev.id.slice(0, 6)}
+                          </span>
+                          <CriticalityBadge level={ev.criticalityLevel} />
+                        </div>
+                        <p className="font-semibold text-ink mt-0.5">{ev.name}</p>
+                        <p className="text-[11px] text-ink-3">{ev.responsibleName}</p>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <p className="font-medium text-ink">{ev.space.name}</p>
+                        <p className="text-[11px] text-ink-3">
+                          {ev.date} · {ev.startTime}-{ev.endTime}
+                        </p>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <EventLifecycleBadge status={ev.lifecycleStatus} />
+                        <div className="mt-1">
+                          <RequestStatusBadge status={ev.spaceRequest?.status || 'PENDING'} />
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold ${
+                            ev.attendanceStats.accessMode === 'OPEN'
+                              ? 'bg-accent-soft text-accent'
+                              : 'bg-warn-soft text-warn'
+                          }`}
+                        >
+                          {ev.attendanceStats.accessMode === 'OPEN' ? 'Abierto' : 'Restringido'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="font-semibold text-ink">
+                          {ev.attendanceStats.registeredActive}
+                        </span>{' '}
+                        /{' '}
+                        <span className="font-semibold text-accent">
+                          {ev.attendanceStats.checkedIn}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="font-semibold text-ink">
+                          {ev.attendanceStats.attendancePct}%
+                        </span>{' '}
+                        /{' '}
+                        <span className="text-ink-2">
+                          {ev.attendanceStats.occupancyPct}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
     </div>

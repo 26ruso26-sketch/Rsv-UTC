@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -12,13 +12,10 @@ import {
   FileBarChart2,
   Settings,
   LogOut,
-  Building2,
   Menu,
   X,
   QrCode,
   Bell,
-  Search,
-  CornerDownLeft,
 } from 'lucide-react';
 import { SessionUser } from '@/types';
 import { NotificationBell } from './NotificationBell';
@@ -29,30 +26,11 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-  visible: boolean;
-  badge?: number;
-  group: 'MENU' | 'GENERAL';
-  keywords?: string;
-}
-
 interface AppShellProps {
   user: SessionUser;
   unreadNotifications: number;
   pendingAuthorizationsCount: number;
   children: React.ReactNode;
-}
-
-function getInitials(fullName: string) {
-  return fullName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('');
 }
 
 export function AppShell({
@@ -70,9 +48,6 @@ export function AppShell({
   >([]);
   const [loadingMobileNotifs, setLoadingMobileNotifs] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [search, setSearch] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
-  const searchRef = useRef<HTMLInputElement>(null);
 
   const toggleMobileNotifications = async () => {
     const next = !mobileNotifOpen;
@@ -101,38 +76,30 @@ export function AppShell({
     user.role === 'DIRECTOR' || user.role === 'EXTENSION' || user.role === 'SUPER_ADMIN';
   const isSuperAdmin = user.role === 'SUPER_ADMIN';
 
-  const navItems: NavItem[] = [
+  const desktopNavItems = [
     {
       label: 'Inicio',
       href: '/dashboard',
       icon: LayoutDashboard,
       visible: true,
-      group: 'MENU',
-      keywords: 'panel dashboard indicadores metricas',
     },
     {
       label: 'Mis eventos',
       href: '/eventos',
       icon: ClipboardList,
       visible: true,
-      group: 'MENU',
-      keywords: 'expedientes ciclo de vida evidencias',
     },
     {
       label: 'Nuevo evento',
       href: '/eventos/nuevo',
       icon: CalendarPlus,
       visible: true,
-      group: 'MENU',
-      keywords: 'registrar solicitar reservar espacio',
     },
     {
       label: 'Calendario',
       href: '/calendario',
       icon: CalendarDays,
       visible: true,
-      group: 'MENU',
-      keywords: 'disponibilidad agenda ocupacion',
     },
     {
       label: 'Autorizaciones',
@@ -140,53 +107,26 @@ export function AppShell({
       icon: ShieldCheck,
       visible: canAuthorize,
       badge: pendingAuthorizationsCount > 0 ? pendingAuthorizationsCount : undefined,
-      group: 'GENERAL',
-      keywords: 'aprobar rechazar bandeja solicitudes',
     },
     {
-      label: 'Escáner QR',
+      label: 'Escáner de asistencia',
       href: '/escaner',
       icon: QrCode,
       visible: true,
-      group: 'GENERAL',
-      keywords: 'asistencia check-in acceso lector',
     },
     {
       label: 'Reportes',
       href: '/reportes',
       icon: FileBarChart2,
       visible: true,
-      group: 'GENERAL',
-      keywords: 'metricas pdf csv excel exportar estadisticas',
     },
     {
       label: 'Administración',
       href: '/admin',
       icon: Settings,
       visible: isSuperAdmin,
-      group: 'GENERAL',
-      keywords: 'usuarios edificios espacios catalogos auditoria',
     },
   ];
-
-  const visibleNav = navItems.filter((item) => item.visible);
-
-  const searchResults = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return [];
-    return visibleNav
-      .filter(
-        (item) =>
-          item.label.toLowerCase().includes(term) ||
-          (item.keywords || '').toLowerCase().includes(term)
-      )
-      .slice(0, 5);
-  }, [search, visibleNav]);
-
-  const isActive = (href: string) =>
-    pathname === href ||
-    (href === '/eventos' && pathname.startsWith('/eventos') && pathname !== '/eventos/nuevo') ||
-    (href !== '/eventos' && href !== '/dashboard' && pathname.startsWith(href));
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -195,20 +135,6 @@ export function AppShell({
     router.refresh();
   };
 
-  const goToResult = (href: string) => {
-    setSearch('');
-    setSearchFocused(false);
-    searchRef.current?.blur();
-    router.push(href);
-  };
-
-  const roleShortLabel =
-    user.role === 'SUPER_ADMIN'
-      ? 'Administrador General'
-      : user.role === 'EXTENSION'
-      ? 'Extensión Universitaria'
-      : user.buildingName || 'Dirección de Edificio';
-
   const roleBadgeLabel =
     user.role === 'SUPER_ADMIN'
       ? 'SUPER_ADMIN · Administrador General'
@@ -216,204 +142,136 @@ export function AppShell({
       ? 'EXTENSION · Extensión Universitaria'
       : `DIRECTOR · ${user.buildingName || 'Edificio Asignado'}`;
 
-  const renderNavGroup = (group: 'MENU' | 'GENERAL') => {
-    const items = visibleNav.filter((item) => item.group === group);
-    if (items.length === 0) return null;
+  const initials = user.fullName
+    .replace(/\(.*?\)/g, '')
+    .split(/\s+/)
+    .filter((part) => part && !/^(dr|dra|mtro|mtra|lic|ing|c\.p)\.?$/i.test(part))
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
 
-    return (
-      <div className="space-y-0.5">
-        <p className="px-3 pb-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted">
-          {group}
-        </p>
-        {items.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.href);
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={`group relative flex items-center justify-between rounded-xl py-2 pl-3 pr-2.5 text-[13px] transition-colors duration-200 ease-out ${
-                active
-                  ? 'bg-surface font-semibold text-ink shadow-card'
-                  : 'font-medium text-muted hover:bg-surface/70 hover:text-ink'
-              }`}
-            >
-              {active && (
-                <span className="absolute -left-2 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-brand" />
-              )}
-              <span className="flex min-w-0 items-center gap-2.5">
-                <Icon
-                  className={`h-[17px] w-[17px] shrink-0 transition-colors ${
-                    active ? 'text-brand' : 'text-muted group-hover:text-brand'
-                  }`}
-                />
-                <span className="truncate">{item.label}</span>
-              </span>
-              {item.badge !== undefined && (
-                <span className="ml-1 shrink-0 rounded-full bg-brand-gold-soft px-1.5 py-0.5 text-[10px] font-bold text-[#A47B1E]">
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    );
-  };
+  const mobileTab = (active: boolean) =>
+    `relative flex flex-col items-center justify-center gap-1 min-h-[44px] text-[11px] transition-colors ${
+      active ? 'font-semibold text-ink' : 'font-medium text-ink-3 hover:text-ink'
+    }`;
+  const mobileTabBar = <span className="absolute top-0 inset-x-5 h-[3px] bg-accent" />;
+  const sheetTile =
+    'flex items-center gap-2.5 rounded-md border border-line p-3.5 text-xs font-medium text-ink hover:border-ink min-h-[48px] transition-colors';
 
   return (
-    <div className="min-h-screen bg-app lg:p-3.5 print:bg-white print:p-0">
-      <div className="mx-auto flex w-full max-w-[1680px] flex-col overflow-hidden bg-surface lg:min-h-[calc(100vh-1.75rem)] lg:flex-row lg:rounded-shell lg:shadow-shell print:block print:max-w-none print:rounded-none print:shadow-none">
-        {/* ================= SIDEBAR (escritorio) ================= */}
-        <aside className="hidden shrink-0 lg:flex lg:w-[224px] lg:flex-col lg:gap-4 lg:p-2.5 print:hidden">
-          <div className="flex flex-1 flex-col rounded-[20px] bg-surface-sidebar p-3.5">
-            {/* Logotipo */}
-            <Link href="/dashboard" className="mb-5 flex items-center gap-2.5 px-1.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-deep text-white">
-                <Building2 className="h-[18px] w-[18px]" />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[15px] font-bold leading-tight tracking-tight text-ink">
-                  SREU · UTC
-                </span>
-                <span className="block truncate text-[10px] text-muted">
-                  Espacios y asistencia
-                </span>
-              </span>
-            </Link>
-
-            {/* Navegación */}
-            <nav className="flex-1 space-y-4 overflow-y-auto scrollbar-slim">
-              {renderNavGroup('MENU')}
-              {renderNavGroup('GENERAL')}
-            </nav>
-
-            {/* Banner informativo inferior (guía §4) */}
-            <div className="relative mt-5 overflow-hidden rounded-[18px] bg-brand-deep p-3.5 text-white">
-              <span
-                aria-hidden
-                className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full border border-white/10"
-              />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute -bottom-9 -left-5 h-24 w-24 rounded-full border border-white/10"
-              />
-              <p className="relative text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-gold">
-                Control de acceso
-              </p>
-              <p className="relative mt-1 text-[12px] font-semibold leading-snug">
-                Valida entradas con el lector QR institucional
-              </p>
-              <Link
-                href="/escaner"
-                className="relative mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-brand px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-[#0a8a5d]"
-              >
-                <QrCode className="h-3.5 w-3.5" />
-                Abrir escáner
-              </Link>
+    <div className="min-h-screen bg-paper flex flex-col overflow-x-hidden print:bg-white">
+      <div className="flex-1 flex">
+        {/* Barra lateral de escritorio: directamente sobre el papel */}
+        <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-line shrink-0 sticky top-0 h-screen print:hidden">
+          <div className="px-6 pt-6 pb-5">
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/fondo/logo.png" alt="UTC" className="h-9 w-auto shrink-0" />
+              <div className="min-w-0 border-l border-line pl-3">
+                <h1 className="text-base font-semibold text-ink leading-none">SREU · UTC</h1>
+                <p className="mt-1 text-[11px] text-ink-3 leading-tight">
+                  Reservación y Asistencia QR
+                </p>
+              </div>
             </div>
+          </div>
 
+          <nav className="flex-1 py-2 overflow-y-auto">
+            {desktopNavItems
+              .filter((item) => item.visible)
+              .map((item) => {
+                const Icon = item.icon;
+                const active =
+                  pathname === item.href ||
+                  (item.href !== '/eventos' && pathname.startsWith(item.href)) ||
+                  (item.href === '/eventos' &&
+                    pathname.startsWith('/eventos') &&
+                    pathname !== '/eventos/nuevo');
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative flex items-center justify-between pl-6 pr-5 py-2.5 text-sm transition-colors ${
+                      active ? 'font-semibold text-ink' : 'text-ink-2 hover:text-ink'
+                    }`}
+                  >
+                    {active && <span className="absolute left-0 inset-y-1.5 w-[3px] bg-accent" />}
+                    <span className="flex items-center gap-3 min-w-0">
+                      <Icon
+                        strokeWidth={1.5}
+                        className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-accent' : ''}`}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </span>
+                    {item.badge !== undefined && (
+                      <span className="rounded-full bg-warn-soft px-2 py-0.5 font-mono text-[11px] font-semibold text-warn">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+          </nav>
+
+          <div className="border-t border-line px-6 py-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sunk font-mono text-xs font-semibold text-ink">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-ink leading-snug">{user.fullName}</p>
+                <p className="mt-0.5 text-[11px] text-ink-2 leading-snug">{roleBadgeLabel}</p>
+                <p className="font-mono text-[11px] text-ink-3 truncate">Usuario: @{user.username}</p>
+              </div>
+            </div>
             <button
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[11px] font-semibold text-muted transition-colors hover:border-state-danger/40 hover:bg-[#F9E8E7] hover:text-[#B85D59] disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-line-strong px-4 py-2 text-xs font-medium text-ink-2 transition-colors hover:border-bad hover:text-bad"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              {loggingOut ? 'Cerrando sesión…' : 'Cerrar sesión'}
+              <LogOut strokeWidth={1.5} className="h-4 w-4" />
+              {loggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}
             </button>
           </div>
         </aside>
 
-        {/* ================= ÁREA DE CONTENIDO ================= */}
-        <div className="flex min-w-0 flex-1 flex-col pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0 print:block print:pb-0">
-          {/* Topbar */}
-          <header className="sticky top-0 z-30 border-b border-line bg-surface/95 px-4 backdrop-blur sm:px-6 lg:px-7 print:hidden">
-            <div className="flex h-[66px] items-center justify-between gap-3">
-              {/* Buscador */}
-              <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-deep text-white lg:hidden">
-                  <Building2 className="h-[18px] w-[18px]" />
-                </span>
-
-                <div className="relative w-full max-w-sm">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                  <input
-                    ref={searchRef}
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onFocus={() => setSearchFocused(true)}
-                    onBlur={() => window.setTimeout(() => setSearchFocused(false), 120)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchResults[0]) goToResult(searchResults[0].href);
-                      if (e.key === 'Escape') {
-                        setSearch('');
-                        searchRef.current?.blur();
-                      }
-                    }}
-                    placeholder="Buscar sección o acción…"
-                    aria-label="Buscar una sección del sistema"
-                    className="h-10 w-full rounded-control border border-transparent bg-surface-muted pl-10 pr-14 text-xs text-ink placeholder:text-muted focus:border-line focus:bg-surface focus:outline-none"
-                  />
-                  <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md border border-line bg-surface px-1.5 py-0.5 text-[9px] font-semibold text-muted sm:flex">
-                    <CornerDownLeft className="h-2.5 w-2.5" />
-                    Ir
-                  </kbd>
-
-                  {searchFocused && search.trim().length > 0 && (
-                    <div className="absolute left-0 right-0 top-12 z-40 overflow-hidden rounded-card border border-line bg-surface p-1.5 shadow-hover">
-                      {searchResults.length === 0 ? (
-                        <p className="px-3 py-2.5 text-[11px] text-muted">
-                          Sin coincidencias para “{search.trim()}”.
-                        </p>
-                      ) : (
-                        searchResults.map((item) => {
-                          const Icon = item.icon;
-                          return (
-                            <button
-                              key={item.href}
-                              type="button"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => goToResult(item.href)}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs font-medium text-ink transition-colors hover:bg-surface-muted"
-                            >
-                              <Icon className="h-4 w-4 shrink-0 text-brand" />
-                              <span className="truncate">{item.label}</span>
-                            </button>
-                          );
-                        })
-                      )}
-                    </div>
-                  )}
+        {/* Contenedor Principal */}
+        <div className="flex-1 flex flex-col min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0 print:block print:pb-0">
+          {/* Cabecera superior */}
+          <header className="sticky top-0 z-30 border-b border-line bg-paper px-4 sm:px-6 lg:px-8 py-3 print:hidden">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/fondo/logo.png" alt="UTC" className="h-8 w-auto shrink-0 lg:hidden" />
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-semibold text-ink truncate">
+                    Sistema de Reservación de Espacios Universitarios
+                  </h2>
+                  <p className="font-mono text-[11px] text-ink-3 truncate">{roleBadgeLabel}</p>
                 </div>
               </div>
 
-              {/* Acciones y perfil */}
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/escaner"
+                  className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-xs font-medium text-ink transition-colors hover:border-ink"
+                >
+                  <QrCode strokeWidth={1.5} className="h-4 w-4" />
+                  Escáner QR
+                </Link>
+
                 <Link
                   href="/eventos/nuevo"
-                  className="hidden items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-brand-dark sm:inline-flex"
+                  className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-medium text-surface transition-colors hover:bg-ink-2"
                 >
-                  <CalendarPlus className="h-3.5 w-3.5" />
-                  Registrar evento
+                  <CalendarPlus strokeWidth={1.5} className="h-4 w-4" />
+                  Registrar Evento
                 </Link>
 
                 <NotificationBell initialUnread={unreadNotifications} />
-
-                <div className="hidden items-center gap-2.5 border-l border-line pl-3 lg:flex">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-[11px] font-bold text-brand-deep">
-                    {getInitials(user.fullName)}
-                  </span>
-                  <span className="min-w-0 max-w-[150px]">
-                    <span className="block truncate text-[12px] font-semibold text-ink">
-                      {user.fullName}
-                    </span>
-                    <span className="block truncate text-[10px] text-muted">{roleShortLabel}</span>
-                  </span>
-                </div>
 
                 <button
                   type="button"
@@ -421,78 +279,62 @@ export function AppShell({
                   disabled={loggingOut}
                   title="Cerrar sesión"
                   aria-label="Cerrar sesión"
-                  className="ui-icon-btn lg:hidden"
+                  className="inline-flex lg:hidden h-9 w-9 items-center justify-center rounded-full border border-line-strong text-ink-2 transition-colors hover:border-bad hover:text-bad"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut strokeWidth={1.5} className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </header>
 
-          {/* Contenido de la página */}
-          <main className="mx-auto w-full max-w-[1420px] flex-1 px-4 py-5 sm:px-6 lg:px-7 lg:py-6 print:max-w-none print:p-0">
+          {/* Contenido de la Página */}
+          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-[1440px] w-full mx-auto print:max-w-none print:p-0">
             <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
           </main>
         </div>
       </div>
 
-      {/* ================= NAVEGACIÓN INFERIOR (móvil/tablet) ================= */}
+      {/* Barra inferior fija para móvil y tablet */}
       <nav
         aria-label="Navegación principal móvil"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgba(20,35,28,0.06)] lg:hidden print:hidden"
+        className="fixed bottom-0 inset-x-0 z-40 border-t border-line bg-surface lg:hidden pb-[env(safe-area-inset-bottom)] print:hidden"
       >
         <div
-          className={`mx-auto grid h-16 max-w-2xl ${
+          className={`grid ${
             canAuthorize ? 'grid-cols-5' : 'grid-cols-4'
-          }`}
+          } h-16 max-w-2xl mx-auto`}
         >
-          {[
-            { href: '/dashboard', label: 'Inicio', icon: LayoutDashboard, active: pathname === '/dashboard' },
-            {
-              href: '/calendario',
-              label: 'Calendario',
-              icon: CalendarDays,
-              active: pathname.startsWith('/calendario'),
-            },
-            {
-              href: '/eventos',
-              label: 'Mis eventos',
-              icon: ClipboardList,
-              active: pathname.startsWith('/eventos') && pathname !== '/eventos/nuevo',
-            },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`relative flex min-h-[44px] flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors ${
-                  tab.active ? 'text-brand-deep' : 'text-muted hover:text-ink'
-                }`}
-              >
-                {tab.active && (
-                  <span className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-brand" />
-                )}
-                <Icon className="h-5 w-5" />
-                <span className="truncate">{tab.label}</span>
-              </Link>
-            );
-          })}
+          <Link href="/dashboard" className={mobileTab(pathname === '/dashboard')}>
+            {pathname === '/dashboard' && mobileTabBar}
+            <LayoutDashboard strokeWidth={1.5} className="h-5 w-5" />
+            <span className="truncate">Inicio</span>
+          </Link>
+
+          <Link href="/calendario" className={mobileTab(pathname.startsWith('/calendario'))}>
+            {pathname.startsWith('/calendario') && mobileTabBar}
+            <CalendarDays strokeWidth={1.5} className="h-5 w-5" />
+            <span className="truncate">Calendario</span>
+          </Link>
+
+          <Link
+            href="/eventos"
+            className={mobileTab(pathname.startsWith('/eventos') && pathname !== '/eventos/nuevo')}
+          >
+            {pathname.startsWith('/eventos') && pathname !== '/eventos/nuevo' && mobileTabBar}
+            <ClipboardList strokeWidth={1.5} className="h-5 w-5" />
+            <span className="truncate">Mis eventos</span>
+          </Link>
 
           {canAuthorize && (
             <Link
               href="/autorizaciones"
-              className={`relative flex min-h-[44px] flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors ${
-                pathname.startsWith('/autorizaciones') ? 'text-brand-deep' : 'text-muted hover:text-ink'
-              }`}
+              className={mobileTab(pathname.startsWith('/autorizaciones'))}
             >
-              {pathname.startsWith('/autorizaciones') && (
-                <span className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-brand" />
-              )}
-              <ShieldCheck className="h-5 w-5" />
+              {pathname.startsWith('/autorizaciones') && mobileTabBar}
+              <ShieldCheck strokeWidth={1.5} className="h-5 w-5" />
               <span className="truncate">Autorizar</span>
               {pendingAuthorizationsCount > 0 && (
-                <span className="absolute right-3 top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand-gold px-1 text-[10px] font-bold text-white">
+                <span className="absolute top-1.5 right-3 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-warn px-1 font-mono text-[11px] font-semibold text-surface">
                   {pendingAuthorizationsCount}
                 </span>
               )}
@@ -502,90 +344,69 @@ export function AppShell({
           <button
             type="button"
             onClick={() => setMobileMoreOpen(true)}
-            className={`relative flex min-h-[44px] flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors ${
-              mobileMoreOpen || isMoreSectionActive ? 'text-brand-deep' : 'text-muted hover:text-ink'
-            }`}
+            className={mobileTab(mobileMoreOpen || isMoreSectionActive)}
           >
-            {(mobileMoreOpen || isMoreSectionActive) && (
-              <span className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-brand" />
-            )}
-            <Menu className="h-5 w-5" />
+            {(mobileMoreOpen || isMoreSectionActive) && mobileTabBar}
+            <Menu strokeWidth={1.5} className="h-5 w-5" />
             <span className="truncate">Más</span>
             {unreadNotifications > 0 && (
-              <span className="absolute right-4 top-1.5 h-2 w-2 rounded-full bg-state-danger" />
+              <span className="absolute top-1.5 right-4 h-2 w-2 rounded-full bg-bad" />
             )}
           </button>
         </div>
       </nav>
 
-      {/* ================= HOJA INFERIOR "MÁS" ================= */}
+      {/* Hoja inferior "Más" en móvil y tablet */}
       {mobileMoreOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-ink/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-50 bg-ink/50 lg:hidden flex items-end"
           onClick={() => setMobileMoreOpen(false)}
         >
           <div
-            className="mx-auto max-h-[85vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-t-shell bg-surface p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-2xl"
+            className="w-full max-w-2xl mx-auto rounded-t-[20px] border-t border-line bg-surface p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-float space-y-4 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mx-auto h-1 w-10 rounded-full bg-line" />
-            <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-deep">
-                  {getInitials(user.fullName)}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink">{user.fullName}</p>
-                  <p className="truncate text-[11px] text-muted">
-                    @{user.username} · {roleBadgeLabel}
-                  </p>
-                </div>
+            <div className="w-10 h-1 rounded-full bg-line-strong mx-auto" />
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ink truncate">{user.fullName}</p>
+                <p className="font-mono text-[11px] text-ink-3 truncate">
+                  @{user.username} · {roleBadgeLabel}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setMobileMoreOpen(false)}
-                className="ui-icon-btn shrink-0"
+                className="rounded-full p-2 text-ink-2 hover:bg-sunk shrink-0"
                 aria-label="Cerrar menú"
               >
-                <X className="h-4 w-4" />
+                <X strokeWidth={1.5} className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              <Link
-                href="/escaner"
-                onClick={() => setMobileMoreOpen(false)}
-                className="flex min-h-[48px] items-center gap-2.5 rounded-xl border border-brand/20 bg-brand-soft/60 p-3.5 text-xs font-semibold text-brand-deep"
-              >
-                <QrCode className="h-4 w-4 shrink-0 text-brand" />
+              <Link href="/escaner" onClick={() => setMobileMoreOpen(false)} className={sheetTile}>
+                <QrCode strokeWidth={1.5} className="h-4 w-4 shrink-0" />
                 Escáner QR
               </Link>
 
               <Link
                 href="/eventos/nuevo"
                 onClick={() => setMobileMoreOpen(false)}
-                className="flex min-h-[48px] items-center gap-2.5 rounded-xl border border-line p-3.5 text-xs font-semibold text-ink"
+                className={sheetTile}
               >
-                <CalendarPlus className="h-4 w-4 shrink-0 text-brand" />
+                <CalendarPlus strokeWidth={1.5} className="h-4 w-4 shrink-0" />
                 Nuevo evento
               </Link>
 
-              <Link
-                href="/reportes"
-                onClick={() => setMobileMoreOpen(false)}
-                className="flex min-h-[48px] items-center gap-2.5 rounded-xl border border-line p-3.5 text-xs font-semibold text-ink"
-              >
-                <FileBarChart2 className="h-4 w-4 shrink-0 text-brand" />
+              <Link href="/reportes" onClick={() => setMobileMoreOpen(false)} className={sheetTile}>
+                <FileBarChart2 strokeWidth={1.5} className="h-4 w-4 shrink-0" />
                 Reportes
               </Link>
 
               {isSuperAdmin && (
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileMoreOpen(false)}
-                  className="flex min-h-[48px] items-center gap-2.5 rounded-xl border border-line p-3.5 text-xs font-semibold text-ink"
-                >
-                  <Settings className="h-4 w-4 shrink-0 text-brand" />
+                <Link href="/admin" onClick={() => setMobileMoreOpen(false)} className={sheetTile}>
+                  <Settings strokeWidth={1.5} className="h-4 w-4 shrink-0" />
                   Administración
                 </Link>
               )}
@@ -593,42 +414,51 @@ export function AppShell({
               <button
                 type="button"
                 onClick={() => void toggleMobileNotifications()}
-                className="col-span-2 flex min-h-[48px] items-center justify-between rounded-xl border border-line p-3.5 text-xs font-semibold text-ink"
+                className={`col-span-2 justify-between ${sheetTile}`}
               >
                 <span className="flex items-center gap-2.5">
-                  <Bell className="h-4 w-4 shrink-0 text-brand-gold" />
+                  <Bell strokeWidth={1.5} className="h-4 w-4 shrink-0" />
                   Notificaciones
                 </span>
                 {unreadNotifications > 0 && (
-                  <span className="ui-chip-pending">{unreadNotifications} sin leer</span>
+                  <span className="rounded-full bg-bad-soft px-2 py-0.5 font-mono text-[11px] font-semibold text-bad">
+                    {unreadNotifications} sin leer
+                  </span>
                 )}
               </button>
             </div>
 
             {mobileNotifOpen && (
-              <div className="max-h-48 space-y-2 overflow-y-auto rounded-card border border-line bg-surface-muted p-3">
+              <div className="border-t border-line max-h-48 overflow-y-auto divide-y divide-line">
                 {loadingMobileNotifs ? (
-                  <p className="py-2 text-center text-[11px] text-muted">
-                    Cargando notificaciones…
-                  </p>
+                  <p className="text-xs text-ink-3 py-3">Cargando notificaciones...</p>
                 ) : mobileNotifs.length === 0 ? (
-                  <p className="py-2 text-center text-[11px] text-muted">
-                    Sin notificaciones recientes.
-                  </p>
+                  <p className="text-xs text-ink-3 py-3">Sin notificaciones recientes.</p>
                 ) : (
                   mobileNotifs.map((n) => (
                     <Link
                       key={n.id}
                       href={n.link || '/dashboard'}
                       onClick={() => setMobileMoreOpen(false)}
-                      className={`block rounded-xl border p-2.5 text-xs ${
-                        n.isRead
-                          ? 'border-line bg-surface text-muted'
-                          : 'border-brand/20 bg-brand-soft/60 font-semibold text-ink'
-                      }`}
+                      className="flex items-start gap-2.5 py-2.5 text-xs"
                     >
-                      <p className="truncate font-semibold">{n.title}</p>
-                      <p className="line-clamp-2 text-[11px] opacity-80">{n.message}</p>
+                      <span
+                        className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
+                          n.isRead ? 'bg-line-strong' : 'bg-accent'
+                        }`}
+                      />
+                      <span className="min-w-0">
+                        <span
+                          className={`block truncate ${
+                            n.isRead ? 'text-ink-2' : 'font-semibold text-ink'
+                          }`}
+                        >
+                          {n.title}
+                        </span>
+                        <span className="block text-[11px] text-ink-3 line-clamp-2">
+                          {n.message}
+                        </span>
+                      </span>
                     </Link>
                   ))
                 )}
@@ -639,10 +469,10 @@ export function AppShell({
               type="button"
               onClick={handleLogout}
               disabled={loggingOut}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-brand-deep px-4 py-3 text-xs font-semibold text-white"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-bad px-4 py-3 text-xs font-semibold text-bad hover:bg-bad hover:text-surface min-h-[44px] transition-colors"
             >
-              <LogOut className="h-4 w-4" />
-              {loggingOut ? 'Cerrando sesión…' : `Cerrar sesión (@${user.username})`}
+              <LogOut strokeWidth={1.5} className="h-4 w-4" />
+              {loggingOut ? 'Cerrando sesión...' : `Cerrar sesión (@${user.username})`}
             </button>
           </div>
         </div>

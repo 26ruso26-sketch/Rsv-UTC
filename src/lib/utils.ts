@@ -95,7 +95,7 @@ export function getCriticalityMeta(level: number): {
         level: 1,
         label: 'Nivel 1 — Asiste rector (Máxima prioridad)',
         shortLabel: 'Nivel 1 (Rector)',
-        badgeClass: 'bg-purple-100 text-purple-900 border-purple-300',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
         priorityText: 'Crítica Institucional',
       };
     case 2:
@@ -103,7 +103,7 @@ export function getCriticalityMeta(level: number): {
         level: 2,
         label: 'Nivel 2 — Asisten autoridades',
         shortLabel: 'Nivel 2 (Autoridades)',
-        badgeClass: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
         priorityText: 'Alta Prioridad',
       };
     case 3:
@@ -111,7 +111,7 @@ export function getCriticalityMeta(level: number): {
         level: 3,
         label: 'Nivel 3 — Invitados especiales',
         shortLabel: 'Nivel 3 (Invitados)',
-        badgeClass: 'bg-sky-100 text-sky-900 border-sky-300',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
         priorityText: 'Prioridad Media',
       };
     default:
@@ -119,7 +119,7 @@ export function getCriticalityMeta(level: number): {
         level: 4,
         label: 'Nivel 4 — Solo alumnos y docentes',
         shortLabel: 'Nivel 4 (Comunidad)',
-        badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
         priorityText: 'Operación Académica',
       };
   }

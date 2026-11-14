@@ -88,50 +88,50 @@ export function getLifecycleMeta(status: EventLifecycleStatus): {
       return {
         status,
         label: 'Pendiente de autorización',
-        badgeClass: 'bg-amber-50 text-amber-900 border-amber-300',
-        dotClass: 'bg-amber-500',
+        badgeClass: 'bg-warn-soft text-warn border-warn/30',
+        dotClass: 'bg-warn',
       };
     case 'SCHEDULED':
       return {
         status,
         label: 'Programado',
-        badgeClass: 'bg-sky-50 text-sky-900 border-sky-300',
-        dotClass: 'bg-sky-600',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
+        dotClass: 'bg-ink',
       };
     case 'IN_PROGRESS':
       return {
         status,
         label: 'En curso',
-        badgeClass: 'bg-emerald-50 text-emerald-900 border-emerald-400',
-        dotClass: 'bg-emerald-600 animate-pulse',
+        badgeClass: 'bg-accent-soft text-accent border-accent',
+        dotClass: 'bg-accent',
       };
     case 'COMPLETED_PENDING_EVIDENCE':
       return {
         status,
         label: 'Concluido - pendiente de evidencia',
-        badgeClass: 'bg-orange-50 text-orange-900 border-orange-300',
-        dotClass: 'bg-orange-500',
+        badgeClass: 'bg-warn-soft text-warn border-warn/30',
+        dotClass: 'bg-warn',
       };
     case 'CLOSED':
       return {
         status,
         label: 'Cerrado',
-        badgeClass: 'bg-teal-50 text-teal-900 border-teal-300',
-        dotClass: 'bg-teal-600',
+        badgeClass: 'bg-accent-soft text-accent border-accent/30',
+        dotClass: 'bg-accent',
       };
     case 'REJECTED':
       return {
         status,
         label: 'Rechazado',
-        badgeClass: 'bg-rose-50 text-rose-900 border-rose-300',
-        dotClass: 'bg-rose-600',
+        badgeClass: 'bg-bad-soft text-bad border-bad/30',
+        dotClass: 'bg-bad',
       };
     case 'EXPIRED':
       return {
         status,
         label: 'Vencido',
-        badgeClass: 'bg-slate-200 text-slate-800 border-slate-400',
-        dotClass: 'bg-slate-600',
+        badgeClass: 'bg-sunk text-ink border-line-strong',
+        dotClass: 'bg-ink-3',
       };
   }
 }

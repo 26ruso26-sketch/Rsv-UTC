@@ -1,16 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/*
+ * Acceso — sistema "Papel y tinta".
+ * La fotografía del campus ocupa el lado izquierdo; el formulario va sobre
+ * papel, con tinta y el verde institucional solo en el foco.
+ * Los colores salen de los tokens definidos en src/app/globals.css.
+ */
 
 .split-container-root {
     min-height: 100vh;
     width: 100%;
-    background: #0f172a;
+    background: rgb(var(--paper));
     overflow-x: hidden;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
 }
 
 .split-container {
     display: flex;
-    width: 100vw;
+    width: 100%;
     min-height: 100vh;
     position: relative;
     box-sizing: border-box;
@@ -18,104 +23,81 @@
 
 .split-container * {
     box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* --- SECCIÓN IZQUIERDA: CARRUSEL DE IMÁGENES --- */
 .split-container .carousel-section {
-    width: 65%;
+    flex: 1 1 62%;
     min-height: 100vh;
     position: relative;
     overflow: hidden;
-    background: #0f172a;
+    background: rgb(var(--ink));
 }
 
 .split-container .carousel-slide {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 1.2s ease-in-out, transform 6s ease-out;
+    transition: opacity 1.2s ease-out;
     object-fit: cover;
-    transform: scale(1);
     pointer-events: none;
 }
 
 .split-container .carousel-slide.active {
     opacity: 1;
-    transform: scale(1.05);
 }
 
-/* Degradado mínimo solo en el borde final (95% a 100%) */
+/* Velo uniforme de tinta para que el texto se lea sobre cualquier foto */
 .split-container .carousel-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        to right,
-        transparent 0%,
-        transparent 95%,
-        #0f172a 100%
-    ),
-    linear-gradient(
-        to top,
-        rgba(15, 23, 42, 0.8) 0%,
-        transparent 45%
-    );
+    background: rgb(var(--ink) / 0.38);
     z-index: 1;
     pointer-events: none;
 }
 
 .split-container .info-content {
     position: absolute;
-    bottom: 60px;
-    left: 60px;
+    bottom: 56px;
+    left: 56px;
+    right: 56px;
     z-index: 2;
-    color: #fff;
+    color: rgb(var(--on-accent));
     pointer-events: none;
 }
 
 .split-container .info-content h1 {
-    font-size: 2.8rem;
-    margin: 0 0 12px;
-    font-weight: 700;
-    max-width: 550px;
-    line-height: 1.15;
+    font-family: var(--font-display), 'Helvetica Neue', sans-serif;
+    font-size: clamp(2.2rem, 3.6vw, 3.4rem);
+    margin: 0 0 14px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    max-width: 14ch;
+    line-height: 1.02;
 }
 
 .split-container .info-content p {
-    font-size: 1.05rem;
-    color: #cbd5e1;
-    max-width: 480px;
+    font-size: 1rem;
+    color: rgb(var(--on-accent) / 0.86);
+    max-width: 44ch;
     margin: 0;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 /* --- SECCIÓN DERECHA: LOGIN --- */
 .split-container .login-side {
-    width: 35%;
-    min-width: 400px;
-    background: #0f172a;
+    flex: 0 0 38%;
+    min-width: 420px;
+    background: rgb(var(--paper));
+    border-left: 1px solid rgb(var(--line));
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px;
+    padding: 48px;
     z-index: 2;
     position: relative;
-    box-sizing: border-box;
-}
-
-/* Difuminado mínimo en la línea de unión */
-.split-container .login-side::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -12px;
-    width: 12px;
-    background: linear-gradient(to right, transparent, #0f172a);
-    pointer-events: none;
 }
 
 .split-container .login-box {
@@ -124,73 +106,78 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    color: #fff;
+    color: rgb(var(--ink));
 }
 
-/* Logo centrado y más grande */
 .split-container .login-box img.logo {
-    width: 240px;
+    width: 132px;
     max-width: 100%;
     height: auto;
-    margin: 0 auto 10px auto;
+    margin: 0 0 28px 0;
     display: block;
 }
 
 .split-container .login-box .header-texts h2 {
-    font-size: 2rem;
-    margin: 0 0 5px;
-    font-weight: 700;
-    color: #ffffff;
+    font-family: var(--font-display), 'Helvetica Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+    font-weight: 600;
+    color: rgb(var(--ink));
 }
 
 .split-container .login-box .header-texts p {
-    color: #94a3b8;
-    font-size: 0.9rem;
+    color: rgb(var(--ink-2));
+    font-size: 0.95rem;
     margin: 0;
 }
 
 .split-container .login-box .error-box {
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.4);
-    color: #fca5a5;
+    background: rgb(var(--bad-soft));
+    border: 1px solid rgb(var(--bad) / 0.3);
+    color: rgb(var(--bad));
     padding: 10px 14px;
-    border-radius: 10px;
+    border-radius: 6px;
     font-size: 0.85rem;
     line-height: 1.4;
-    animation: fadeIn 0.3s ease-in-out;
 }
 
 .split-container .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .split-container label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #cbd5e1;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--ink-3));
 }
 
 .split-container .input {
     width: 100%;
-    padding: 0.85rem 1rem;
+    height: 48px;
+    padding: 0 1rem;
+    font-family: inherit;
     font-size: 0.95rem;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
+    color: rgb(var(--ink));
+    background: rgb(var(--sunk));
+    border: 1.5px solid transparent;
+    border-radius: 6px;
     outline: none;
-    transition: 0.2s;
+    transition: border-color 150ms ease-out;
 }
 
 .split-container .input:focus {
-    border-color: #00bfff;
-    background: rgba(255, 255, 255, 0.08);
+    border-color: rgb(var(--ink));
 }
 
 .split-container .input::placeholder {
-    color: #64748b;
+    color: rgb(var(--ink-3));
 }
 
 .split-container .input:disabled {
@@ -218,55 +205,41 @@
     border: none;
     padding: 4px;
     margin: 0;
-    width: auto;
-    height: auto;
-    color: #94a3b8;
+    color: rgb(var(--ink-3));
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    transition: color 150ms ease-out;
     border-radius: 6px;
-    outline: none;
 }
 
 .split-container .toggle-password-btn:hover {
-    color: #00bfff;
+    color: rgb(var(--ink));
 }
 
 .split-container button.login-button {
     width: 100%;
-    padding: 0.9rem;
+    height: 48px;
     border: none;
-    border-radius: 10px;
-    background: #ffffff;
-    color: #0f172a;
-    font-weight: 700;
+    border-radius: 999px;
+    background: rgb(var(--ink));
+    color: rgb(var(--paper));
+    font-family: inherit;
+    font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-    margin-top: 4px;
+    transition: background 150ms ease-out;
+    margin-top: 8px;
 }
 
 .split-container button.login-button:hover:not(:disabled) {
-    background: #e2e8f0;
-    transform: translateY(-1px);
+    background: rgb(var(--ink-2));
 }
 
 .split-container button.login-button:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* --- ADAPTABILIDAD A PANTALLAS MÓVILES --- */
@@ -280,12 +253,11 @@
     }
 
     .split-container .login-side {
+        flex: 1 1 auto;
         width: 100%;
-        min-width: 100%;
+        min-width: 0;
         min-height: 100vh;
-    }
-
-    .split-container .login-side::before {
-        display: none;
+        border-left: none;
+        padding: 32px 24px;
     }
 }

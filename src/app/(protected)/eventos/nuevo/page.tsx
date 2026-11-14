@@ -7,7 +7,7 @@ import {
   CalendarPlus,
   CheckCircle2,
   AlertTriangle,
-  Sparkles,
+  Layers,
   UserCheck,
   Wrench,
   FileUp,
@@ -222,15 +222,15 @@ export default function NuevoEventoPage() {
         <div>
           <Link
             href="/eventos"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Volver a Mis Eventos
           </Link>
-          <h1 className="mt-1 text-2xl font-extrabold text-slate-900">
+          <h1 className="mt-1 text-2xl sm:text-[28px] font-semibold text-ink">
             Registrar Nuevo Evento y Solicitud de Espacio
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-ink-3">
             El sistema verificará la disponibilidad (incluyendo la hora obligatoria de limpieza),
             bloqueará provisionalmente el espacio y configurará el control de asistencia QR.
           </p>
@@ -238,10 +238,10 @@ export default function NuevoEventoPage() {
       </div>
 
       {errorMsg && (
-        <div className="rounded-2xl border border-rose-300 bg-rose-50 p-4 text-xs font-semibold text-rose-900 flex items-start gap-2.5">
-          <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
+        <div className="rounded-xl border border-bad/30 bg-bad-soft p-4 text-xs font-medium text-bad flex items-start gap-2.5">
+          <AlertTriangle className="h-5 w-5 text-bad shrink-0" />
           <div>
-            <p className="font-bold">No se pudo registrar el evento:</p>
+            <p className="font-semibold">No se pudo registrar el evento:</p>
             <p className="mt-0.5">{errorMsg}</p>
           </div>
         </div>
@@ -249,14 +249,14 @@ export default function NuevoEventoPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 1. Datos Generales del Evento */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5">
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+          <h2 className="text-sm font-semibold text-ink border-b border-line pb-2.5">
             1. Información General del Evento
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-ink-2 mb-1">
                 Nombre del evento *
               </label>
               <input
@@ -265,13 +265,13 @@ export default function NuevoEventoPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej. Simposio de Ingeniería y Desarrollo de Software"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm"
+                className="w-full rounded-md border border-line-strong px-3.5 py-2.5 text-sm"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-2 mb-1">
                   Descripción del evento *
                 </label>
                 <textarea
@@ -280,12 +280,12 @@ export default function NuevoEventoPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe las actividades principales y objetivo del evento..."
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                  className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-2 mb-1">
                   Justificación académica o institucional *
                 </label>
                 <textarea
@@ -294,7 +294,7 @@ export default function NuevoEventoPage() {
                   value={justification}
                   onChange={(e) => setJustification(e.target.value)}
                   placeholder="Explica la relevancia institucional para la autorización del recinto..."
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                  className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
                 />
               </div>
             </div>
@@ -302,14 +302,14 @@ export default function NuevoEventoPage() {
         </div>
 
         {/* 2. Espacio Solicitado, Horario y Validación de Limpieza */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-            <h2 className="text-sm font-bold text-slate-900">
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2.5">
+            <h2 className="text-sm font-semibold text-ink">
               2. Espacio Solicitado, Horario y Regla de Limpieza (+1 Hora)
             </h2>
             {selectedSpace && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-soft border border-accent/30 px-3 py-1 text-xs font-semibold text-accent">
+                <ShieldCheck className="h-3.5 w-3.5 text-accent" />
                 Autorizador asignado: {selectedSpace.authorizer?.fullName} (@
                 {selectedSpace.authorizer?.username}) · Cap: {selectedSpace.capacity ?? 'N/D'}
               </span>
@@ -318,14 +318,14 @@ export default function NuevoEventoPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-ink-2 mb-1">
                 Espacio universitario (obligatorio) *
               </label>
               <select
                 required
                 value={spaceId}
                 onChange={(e) => setSpaceId(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-semibold"
+                className="w-full rounded-md border border-line-strong px-3.5 py-2.5 text-xs font-medium"
               >
                 {spaces.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -336,35 +336,35 @@ export default function NuevoEventoPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Fecha *</label>
+              <label className="block text-xs font-semibold text-ink-2 mb-1">Fecha *</label>
               <input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs"
+                className="w-full rounded-md border border-line-strong px-3 py-2 text-xs"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Inicio *</label>
+                <label className="block text-xs font-semibold text-ink-2 mb-1">Inicio *</label>
                 <input
                   type="time"
                   required
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs"
+                  className="w-full rounded-md border border-line-strong px-2.5 py-2 text-xs"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Fin *</label>
+                <label className="block text-xs font-semibold text-ink-2 mb-1">Fin *</label>
                 <input
                   type="time"
                   required
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 px-2.5 py-2 text-xs"
+                  className="w-full rounded-md border border-line-strong px-2.5 py-2 text-xs"
                 />
               </div>
             </div>
@@ -375,27 +375,27 @@ export default function NuevoEventoPage() {
             <div
               className={`rounded-xl border p-3.5 text-xs ${
                 availabilityStatus.available
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                  : 'border-rose-300 bg-rose-50 text-rose-900'
+                  ? 'border-accent/30 bg-accent-soft text-accent'
+                  : 'border-bad/30 bg-bad-soft text-bad'
               }`}
             >
               {availabilityStatus.available ? (
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 font-bold">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-2 font-semibold">
+                    <CheckCircle2 className="h-4 w-4 text-accent shrink-0" />
                     <span>
                       Horario disponible en {selectedSpace?.name}: Evento de {startTime} a {endTime}
                     </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-lg bg-amber-100 border border-amber-300 px-2.5 py-1 text-[11px] font-bold text-amber-900">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-warn-soft border border-warn/30 px-2.5 py-1 text-[11px] font-semibold text-warn">
                     <Clock className="h-3.5 w-3.5" />
                     Hora obligatoria de limpieza: {endTime} a {cleaningPreview}
                   </span>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 font-bold">
-                    <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                  <div className="flex items-center gap-2 font-semibold">
+                    <AlertTriangle className="h-4 w-4 text-bad shrink-0" />
                     <span>Conflicto de disponibilidad detectado:</span>
                   </div>
                   {availabilityStatus.error && <p>{availabilityStatus.error}</p>}
@@ -411,13 +411,13 @@ export default function NuevoEventoPage() {
         </div>
 
         {/* 3. Solicitante Representado (Maestros / Responsable del Evento) */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="border-b border-slate-100 pb-2.5">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-emerald-700" />
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+          <div className="border-b border-line pb-2.5">
+            <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-accent" />
               3. Datos del Responsable del Evento (Solicitante Representado)
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-3">
               Diferencia claramente al docente o responsable operativo respecto al usuario que
               registra la solicitud en el sistema.
             </p>
@@ -425,7 +425,7 @@ export default function NuevoEventoPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-ink-2 mb-1">
                 Nombre del responsable del evento *
               </label>
               <input
@@ -434,12 +434,12 @@ export default function NuevoEventoPage() {
                 value={responsibleName}
                 onChange={(e) => setResponsibleName(e.target.value)}
                 placeholder="Ej. Mtro. Juan Carlos Pérez"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-ink-2 mb-1">
                 Área o departamento *
               </label>
               <input
@@ -448,12 +448,12 @@ export default function NuevoEventoPage() {
                 value={responsibleDepartment}
                 onChange={(e) => setResponsibleDepartment(e.target.value)}
                 placeholder="Ej. Academia de Sistemas - Edificio 2"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-ink-2 mb-1">
                 Correo electrónico de contacto (opcional)
               </label>
               <input
@@ -461,21 +461,21 @@ export default function NuevoEventoPage() {
                 value={responsibleEmail}
                 onChange={(e) => setResponsibleEmail(e.target.value)}
                 placeholder="docente@utc.edu.mx"
-                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
               />
             </div>
           </div>
         </div>
 
         {/* 4. Catálogo de Criticidad Múltiple */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2.5">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-purple-600" />
+              <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+                <Layers className="h-4 w-4 text-ink-2" />
                 4. Catálogo de Criticidad (Selección Múltiple)
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-3">
                 Selecciona todas las opciones que apliquen. El sistema calcula automáticamente el
                 nivel resultante utilizando el número menor.
               </p>
@@ -483,7 +483,7 @@ export default function NuevoEventoPage() {
 
             {criticalityMeta && (
               <div
-                className={`rounded-xl border px-3.5 py-2 text-xs font-bold ${criticalityMeta.badgeClass}`}
+                className={`rounded-full border px-3.5 py-2 text-xs font-semibold ${criticalityMeta.badgeClass}`}
               >
                 Criticidad resultante: Nivel {criticalityMeta.level} ({criticalityMeta.priorityText})
               </div>
@@ -498,21 +498,21 @@ export default function NuevoEventoPage() {
                   key={aud.id}
                   className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition ${
                     checked
-                      ? 'border-emerald-600 bg-emerald-50/60 shadow-sm'
-                      : 'border-slate-200 bg-white hover:bg-slate-50'
+                      ? 'border-accent bg-accent-soft/60 '
+                      : 'border-line bg-surface hover:bg-paper'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleAudienceLevel(aud.level)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="mt-0.5 h-4 w-4 rounded border-line-strong text-accent focus:ring-ink"
                   />
                   <div>
-                    <p className="text-xs font-bold text-slate-900">
+                    <p className="text-xs font-semibold text-ink">
                       Nivel {aud.level} — {aud.name}
                     </p>
-                    <p className="text-[11px] text-slate-500">{aud.description}</p>
+                    <p className="text-[11px] text-ink-3">{aud.description}</p>
                   </div>
                 </label>
               );
@@ -521,13 +521,13 @@ export default function NuevoEventoPage() {
         </div>
 
         {/* 5. Modalidad de Acceso y Control de Asistencia QR (Sección 8) */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="border-b border-slate-100 pb-2.5">
-            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <QrCode className="h-4 w-4 text-emerald-700" />
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+          <div className="border-b border-line pb-2.5">
+            <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+              <QrCode className="h-4 w-4 text-accent" />
               5. Modalidad de Acceso y Control de Asistencia QR
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-ink-3">
               Define cómo se registrarán los asistentes y cómo se emitirán sus pases QR individuales.
             </p>
           </div>
@@ -536,8 +536,8 @@ export default function NuevoEventoPage() {
             <label
               className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition ${
                 accessMode === 'OPEN'
-                  ? 'border-emerald-600 bg-emerald-50/60 shadow-sm'
-                  : 'border-slate-200 bg-white hover:bg-slate-50'
+                  ? 'border-accent bg-accent-soft/60 '
+                  : 'border-line bg-surface hover:bg-paper'
               }`}
             >
               <input
@@ -545,14 +545,14 @@ export default function NuevoEventoPage() {
                 name="accessMode"
                 checked={accessMode === 'OPEN'}
                 onChange={() => setAccessMode('OPEN')}
-                className="mt-0.5 h-4 w-4 text-emerald-600"
+                className="mt-0.5 h-4 w-4 text-accent"
               />
               <div>
-                <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Globe className="h-3.5 w-3.5 text-emerald-700" />
+                <p className="text-xs font-semibold text-ink flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent" />
                   Evento Abierto (OPEN) — Con registro público
                 </p>
-                <p className="mt-1 text-[11px] text-slate-600">
+                <p className="mt-1 text-[11px] text-ink-2">
                   Habilita un enlace público <code className="font-mono">/registro/[token]</code> una
                   vez aprobado el espacio para que alumnos, docentes, administrativos o invitados se
                   registren y obtengan su QR individual.
@@ -563,8 +563,8 @@ export default function NuevoEventoPage() {
             <label
               className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer transition ${
                 accessMode === 'RESTRICTED'
-                  ? 'border-purple-600 bg-purple-50/60 shadow-sm'
-                  : 'border-slate-200 bg-white hover:bg-slate-50'
+                  ? 'border-ink bg-sunk/60 '
+                  : 'border-line bg-surface hover:bg-paper'
               }`}
             >
               <input
@@ -572,14 +572,14 @@ export default function NuevoEventoPage() {
                 name="accessMode"
                 checked={accessMode === 'RESTRICTED'}
                 onChange={() => setAccessMode('RESTRICTED')}
-                className="mt-0.5 h-4 w-4 text-purple-600"
+                className="mt-0.5 h-4 w-4 text-ink-2"
               />
               <div>
-                <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-purple-700" />
+                <p className="text-xs font-semibold text-ink flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-ink-2" />
                   Evento Restringido (RESTRICTED) — Solo por invitación
                 </p>
-                <p className="mt-1 text-[11px] text-slate-600">
+                <p className="mt-1 text-[11px] text-ink-2">
                   Sin formulario público. Los invitados se administran de forma permanente dentro del
                   detalle del evento, generando y enviando pases QR individuales por invitación.
                 </p>
@@ -589,12 +589,12 @@ export default function NuevoEventoPage() {
 
           {accessMode === 'OPEN' && (
             <div className="pt-2">
-              <label className="inline-flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+              <label className="inline-flex items-center gap-2 text-xs font-medium text-ink cursor-pointer">
                 <input
                   type="checkbox"
                   checked={registrationEnabled}
                   onChange={(e) => setRegistrationEnabled(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                  className="h-4 w-4 rounded border-line-strong text-accent"
                 />
                 Activar automáticamente el enlace de registro público al aprobarse el espacio
               </label>
@@ -603,30 +603,30 @@ export default function NuevoEventoPage() {
         </div>
 
         {/* 6. Solicitud Opcional de Equipo */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Wrench className="h-4 w-4 text-indigo-600" />
+              <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+                <Wrench className="h-4 w-4 text-ink-2" />
                 6. Solicitud de Equipo (Opcional — Autoriza Extensión Universitaria)
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-ink-3">
                 La solicitud de equipo es independiente de la autorización del espacio.
               </p>
             </div>
-            <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 cursor-pointer">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold text-ink cursor-pointer">
               <input
                 type="checkbox"
                 checked={requestEquipment}
                 onChange={(e) => setRequestEquipment(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-indigo-600"
+                className="h-4 w-4 rounded border-line-strong text-ink-2"
               />
               Requiero solicitar equipo
             </label>
           </div>
 
           {requestEquipment && (
-            <div className="space-y-4 pt-2 border-t border-slate-100">
+            <div className="space-y-4 pt-2 border-t border-line">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {equipmentTypes.map((eq) => {
                   const selected = equipmentCodes.includes(eq.code);
@@ -635,19 +635,19 @@ export default function NuevoEventoPage() {
                       key={eq.id}
                       className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer ${
                         selected
-                          ? 'border-indigo-600 bg-indigo-50/60'
-                          : 'border-slate-200 bg-white'
+                          ? 'border-ink bg-sunk/60'
+                          : 'border-line bg-surface'
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={selected}
                         onChange={() => toggleEquipmentCode(eq.code)}
-                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600"
+                        className="mt-0.5 h-4 w-4 rounded border-line-strong text-ink-2"
                       />
                       <div>
-                        <p className="text-xs font-bold text-slate-900">{eq.name}</p>
-                        <p className="text-[11px] text-slate-500">{eq.description}</p>
+                        <p className="text-xs font-semibold text-ink">{eq.name}</p>
+                        <p className="text-[11px] text-ink-3">{eq.description}</p>
                       </div>
                     </label>
                   );
@@ -655,7 +655,7 @@ export default function NuevoEventoPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-ink-2 mb-1">
                   Descripción detallada de lo que necesita (sonido y/o mobiliario) *
                 </label>
                 <textarea
@@ -664,7 +664,7 @@ export default function NuevoEventoPage() {
                   value={equipmentDescription}
                   onChange={(e) => setEquipmentDescription(e.target.value)}
                   placeholder="Especifica micrófonos, bocinas, mesas de presídium, sillas o acomodo requerido..."
-                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs"
+                  className="w-full rounded-md border border-line-strong px-3.5 py-2 text-xs"
                 />
               </div>
             </div>
@@ -672,12 +672,12 @@ export default function NuevoEventoPage() {
         </div>
 
         {/* 7. Documento PDF de Apoyo Opcional */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-3">
-          <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <FileUp className="h-4 w-4 text-sky-600" />
+        <div className="rounded-xl border border-line bg-surface p-6 space-y-3">
+          <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+            <FileUp className="h-4 w-4 text-ink-2" />
             7. Documento PDF de Apoyo (Opcional)
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-ink-3">
             Adjunta programa del evento, oficio de solicitud o ficha técnica en formato PDF (máx.
             10 MB). Nota: La evidencia de cierre obligatorio se adjuntará una vez concluido el
             evento.
@@ -686,7 +686,7 @@ export default function NuevoEventoPage() {
             type="file"
             accept="application/pdf,.pdf"
             onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-            className="block w-full text-xs text-slate-600 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-slate-800"
+            className="block w-full text-xs text-ink-2 file:mr-4 file:rounded-xl file:border-0 file:bg-ink file:px-4 file:py-2 file:text-xs file:font-semibold file:text-surface hover:file:bg-ink-2"
           />
         </div>
 
@@ -694,14 +694,14 @@ export default function NuevoEventoPage() {
         <div className="flex items-center justify-end gap-3">
           <Link
             href="/eventos"
-            className="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+            className="rounded-full border border-line-strong bg-surface px-5 py-2.5 text-xs font-semibold text-ink-2 hover:bg-paper"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={submitting || !availabilityStatus.available}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-6 py-2.5 text-xs font-bold text-white shadow-lg hover:bg-emerald-800 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-2.5 text-xs font-semibold text-surface shadow-float hover:bg-ink-2 disabled:opacity-50"
           >
             <CalendarPlus className="h-4 w-4" />
             {submitting ? 'Registrando evento...' : 'Registrar Evento y Solicitar Espacio'}
